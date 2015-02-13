@@ -3,9 +3,13 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from collections import namedtuple
+from uuid import uuid4
+
 from tinydb import where
 
-from uuid import uuid4
+
+Field = namedtuple('Field', ['default'])
 
 
 class Base(object):
@@ -20,6 +24,9 @@ class Base(object):
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
+        for name, field in self.fields.items():
+            if field.default is not None and not hasattr(self, name):
+                setattr(self, name, field.default)
 
     @classmethod
     def from_dict(cls, obj, instance=None):
@@ -30,7 +37,7 @@ class Base(object):
         return instance
 
     def save(self):
-        fields = self.fields
+        fields = self.fields.keys()
         if not hasattr(self, 'eid'):
             doc = {f: getattr(self, f) for f in fields if getattr(self, f) is not None}
             doc['uuid'] = str(uuid4())
@@ -73,29 +80,3 @@ class Base(object):
     @classmethod
     def update(cls, affectations, query):
         cls.get_table().update(affectations, query)
-
-
-class Webradio(Base):
-    tablename = 'webradio'
-    fields = ['name', 'url']
-
-    def __init__(self, **kwargs):
-        super(Webradio, self).__init__(**kwargs)
-
-    def __repr__(self):
-        return '<Webradio name:%s url:%s>' % (self.name, self.url)
-
-
-class Alarm(Base):
-    tablename = 'alarm'
-    fields = ['start', 'message']
-
-    def __init__(self, **kwargs):
-        super(Alarm, self).__init__(**kwargs)
-
-    def __repr__(self):
-        return '<Alarm start:%f>' % self.start
-
-
-def setup_db(db):
-    Base.db = db

@@ -32,7 +32,8 @@ from tinydb import TinyDB
 from . import __version__ as VERSION
 from .radio import Radio
 from .cron import CronService
-from .models import setup_db, Webradio, Alarm
+from .log import Logger
+from .models import setup_db
 
 app = Bottle()
 
@@ -64,6 +65,23 @@ def stop():
     redirect("/")
 
 
+# ~~~ API ~~~
+
+@app.get('/api/play/')
+@app.get('/api/play/<url:path>')
+def api_play(url=None):
+    app.radio.play(url)
+    return {'status': 'success'}
+
+
+@app.get('/api/stop/')
+def api_stop():
+    app.radio.stop()
+    return {'status': 'success'}
+
+
+# ~~~ MAIN ~~~
+
 def main():
     args = docopt(__doc__, version='clok ' + VERSION)
 
@@ -73,10 +91,13 @@ def main():
     DEBUG = args['--debug'] or False
     TEMPLATE_PATH.append(join(abspath(dirname(__file__)), 'views'))
 
+    app.logger = Logger('clok')
+    app.logger.setup()  # TODO : setup according to args['--log']
     app.radio = Radio()
     db = TinyDB(DBFILE)
     setup_db(db)  # setup database for this process (main process)
     app.cron = CronService(db)
+    app.cron.update()
     try:
         app.run(host=HOST, port=PORT, debug=DEBUG)
     except KeyboardInterrupt:

@@ -3,48 +3,59 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from datetime import datetime
 from multiprocessing import Process
-from time import sleep, time
+from time import sleep
 
-import requests
+from .client import ClokClient
+from .log import Logger
+from .models import Alarm, AlarmEvent, NoAlarms
 
-from .models import Alarm
 
-
-def alarm_process(timer, url):
-    """ Sleeps <timer> seconds, then hits <url>. """
-    sleep(timer)
-    print ">>>>>>>>>>>>>>", url
-    # requests.get(url)
+def event_process(event):
+    """ Sleeps some time, then hits a url. """
+    logger = Logger('cron')
+    logger.setup()
+    sleeptime = (event.time - datetime.now()).total_seconds
+    logger.info('will sleep for %d seconds', sleeptime)
+    sleep(sleeptime)
+    logger.info('will hit a url ! [%s]', "START" if AlarmEvent.START else "STOP")
+    clokc = ClokClient()
+    if event.type == AlarmEvent.START:
+        clokc.play(event.alarm.url)
+    elif event.type == AlarmEvent.STOP:
+        clokc.stop()
+    else:
+        raise NotImplementedError
 
 
 class CronService(object):
     def __init__(self, db):
-        self._alarm = None  # alarm_process
-        self.update()
+        self._process = None  # event_process
+        self.logger = Logger('clok')
 
     def setup_alarm(self):
         """ Find the next alarm in db, launch its process. """
-        alarms = sorted(Alarm.all(), key=lambda e: e.start)
-        first = (a for a in alarms if a.start > time()).next()
-        self._alarm = Process(
-            target=alarm_process,
-            args=[first.start - time(), first.message]
-        )
-        self._alarm.daemon = True
-        self._alarm.start()
-        self.next_alarm_time = first.start
-        print ">>> ALARM programmed in", first.start - time()
+        try:
+            self.next_event = Alarm.next_event_overall()
+        except NoAlarms:
+            self.logger.warn("no alarms !")
+        else:
+            self._process = Process(target=event_process, args=[self.next_event])
+            self._process.daemon = True
+            self._process.start()
 
     def cancel_alarm(self):
-        if self._alarm is not None:
-            self._alarm.terminate()
+        if self._process is not None:
+            self._process.terminate()
+            self._process = None
 
     def update(self):
         """ Force CronService to update its config (reread database). """
+        self.logger.info('update CronService')
         self.cancel_alarm()
         self.setup_alarm()
 
     def remaining_time(self):
-        if self._alarm is not None:
-            return self.next_alarm_time - time()
+        if self._process is not None:
+            return self.next_event.time - datetime.now()
