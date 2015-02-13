@@ -30,7 +30,7 @@ def event_process(event):
 
 
 class CronService(object):
-    def __init__(self, db):
+    def __init__(self):
         self._process = None  # event_process
         self.logger = Logger('clok')
 

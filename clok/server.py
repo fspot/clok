@@ -96,7 +96,7 @@ def main():
     app.radio = Radio()
     db = TinyDB(DBFILE)
     setup_db(db)  # setup database for this process (main process)
-    app.cron = CronService(db)
+    app.cron = CronService()
     app.cron.update()
     try:
         app.run(host=HOST, port=PORT, debug=DEBUG)
