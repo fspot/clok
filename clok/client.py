@@ -3,7 +3,12 @@
 
 from __future__ import unicode_literals, absolute_import
 
-from urlparse import urljoin
+from . import PY3
+
+if PY3:
+    from urllib.parse import urljoin
+else:
+    from urlparse import urljoin
 
 import requests
 

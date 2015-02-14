@@ -14,6 +14,11 @@ def mock():
     yield mockmodule
 
 
+@pytest.yield_fixture(scope="session")
+def assert_raises():
+    yield pytest.raises
+
+
 @pytest.yield_fixture()
 def test_db():
     yield TinyDB(storage=MemoryStorage)

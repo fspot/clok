@@ -3,11 +3,11 @@
 
 from __future__ import unicode_literals, absolute_import
 
-from .base import Base
+from .base import Base, AttributeRequired
 from .webradio import Webradio
 from .alarm import Alarm, AlarmEvent, NoAlarms
 
-__all__ = ['Webradio', 'Alarm', 'AlarmEvent', 'NoAlarms', 'setup_db']
+__all__ = ['Webradio', 'Alarm', 'AlarmEvent', 'NoAlarms', 'setup_db', 'AttributeRequired']
 
 
 def setup_db(db):

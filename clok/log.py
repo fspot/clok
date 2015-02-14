@@ -6,6 +6,9 @@ from logging import handlers
 
 
 class Logger(object):
+    DEFAULT_FORMAT = "[%(asctime)s] [%(name)s] %(levelname)-8s | %(message)s"
+    DEFAULT_SYSLOG_ADDRESS = '/dev/log'
+
     def __init__(self, name='clok'):
         self.logger = logging.getLogger(name)
 
@@ -13,13 +16,13 @@ class Logger(object):
         """ By default, will log on stderr from lvl DEBUG """
         level = getattr(logging, level.upper())
         if format is None:
-            format = "[%(asctime)s] [%(name)s] %(levelname)-8s | %(message)s"
+            format = Logger.DEFAULT_FORMAT
         if type == 'file':
             handler = logging.FileHandler(filename)
         elif type == 'stderr':
             handler = logging.StreamHandler()
         elif type == 'syslog':
-            handler = handlers.SysLogHandler(address='/dev/log')
+            handler = handlers.SysLogHandler(address=Logger.DEFAULT_SYSLOG_ADDRESS)
         handler.setLevel(level)
         handler.setFormatter(logging.Formatter(format))
         self.logger.setLevel(level)

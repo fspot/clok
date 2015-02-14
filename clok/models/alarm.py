@@ -35,7 +35,7 @@ class Alarm(Base):
         super(Alarm, self).__init__(**kwargs)
 
     def __repr__(self):
-        return '<Alarm start:%f>' % self.start
+        return '<Alarm start=%d:%02d>' % (self.start / 3600, (self.start % 3600) / 60)
 
     def get_webradio(self):
         return Webradio.get(eid=self.webradio)
@@ -84,7 +84,7 @@ class Alarm(Base):
         return sorted(events, key=lambda e: e.time)[0]
 
     def to_next_event(self):
-        return self.next_event() - datetime.datetime.now()
+        return self.next_event().time - datetime.datetime.now()
 
     @classmethod
     def next_event_overall(cls):

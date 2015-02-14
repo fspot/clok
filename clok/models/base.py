@@ -9,6 +9,10 @@ from uuid import uuid4
 from tinydb import where
 
 
+class AttributeRequired(Exception):
+    pass
+
+
 Field = namedtuple('Field', ['default'])
 
 
@@ -16,6 +20,10 @@ class Base(object):
     db = None  # must be overwritten
     tablename = None  # must be overwritten
     fields = None  # must be overwritten
+
+    @classmethod
+    def required_fields(cls):
+        return [f for f, v in cls.fields.items() if v.default is None]
 
     @classmethod
     def get_table(cls):
@@ -28,6 +36,9 @@ class Base(object):
             if field.default is not None and not hasattr(self, name):
                 setattr(self, name, field.default)
 
+    def __eq__(self, other):
+        return self.uuid == other.uuid
+
     @classmethod
     def from_dict(cls, obj, instance=None):
         instance = instance or cls()
@@ -36,10 +47,16 @@ class Base(object):
         setattr(instance, 'eid', obj.eid)
         return instance
 
+    def to_dict(self):
+        return self.get_table().get(eid=self.eid).copy()
+
     def save(self):
         fields = self.fields.keys()
         if not hasattr(self, 'eid'):
-            doc = {f: getattr(self, f) for f in fields if getattr(self, f) is not None}
+            try:
+                doc = {f: getattr(self, f) for f in fields if getattr(self, f) is not None}
+            except AttributeError:
+                raise AttributeRequired()
             doc['uuid'] = str(uuid4())
             self.eid = self.get_table().insert(doc)
             self.uuid = doc['uuid']
@@ -54,24 +71,30 @@ class Base(object):
         return self
 
     def refresh(self):
-        old = self.get_table().get(eid=self.eid)
-        return self.from_dict(old, self)
+        in_db = self.get_table().get(eid=self.eid)
+        return self.from_dict(in_db, self)
 
     @classmethod
     def get(cls, eid=None, uuid=None):
         if uuid is None:
-            return cls.from_dict(cls.get_table().get(eid=eid))
+            found = cls.get_table().get(eid=eid)
+            return cls.from_dict(found) if found else None
         found = cls.filter(where('uuid') == uuid)
-        if found != []:
-            return cls.from_dict(found[0])
+        return found[0] if found else None
 
     @classmethod
-    def all(cls):
-        return [cls.from_dict(o) for o in cls.get_table().all()]
+    def all(cls, to_dict=False):
+        ret = [cls.from_dict(o) for o in cls.get_table().all()]
+        return ret if to_dict is False else [o.to_dict() for o in ret]
 
     @classmethod
-    def filter(cls, query):
-        return [cls.from_dict(o) for o in cls.get_table().search(query)]
+    def filter(cls, query, to_dict=False):
+        ret = [cls.from_dict(o) for o in cls.get_table().search(query)]
+        return ret if to_dict is False else [o.to_dict() for o in ret]
+
+    @classmethod
+    def count(cls, query):
+        return cls.get_table().count(query)
 
     @classmethod
     def remove(cls, query):

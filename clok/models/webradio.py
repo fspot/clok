@@ -17,4 +17,4 @@ class Webradio(Base):
         super(Webradio, self).__init__(**kwargs)
 
     def __repr__(self):
-        return '<Webradio name:%s url:%s>' % (self.name, self.url)
+        return '<Webradio name=%s url=%s>' % (self.name, self.url)

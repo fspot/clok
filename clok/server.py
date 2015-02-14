@@ -24,19 +24,35 @@ Options:
 from __future__ import unicode_literals, absolute_import
 
 from os.path import dirname, abspath, join
+from functools import wraps
 
 from bottle import Bottle, view, request, redirect, TEMPLATE_PATH
 from docopt import docopt
-from tinydb import TinyDB
+from tinydb import TinyDB, where
 
 from . import __version__ as VERSION
 from .radio import Radio
 from .cron import CronService
 from .log import Logger
-from .models import setup_db
+from .models import (
+    setup_db, Alarm, NoAlarms, AlarmEvent, Webradio, AttributeRequired
+)
 
 app = Bottle()
 
+
+# ~~~ UTILS ~~~
+
+def update_cron_after(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        ret = func(*args, **kwargs)
+        app.cron.update()
+        return ret
+    return wrapper
+
+
+# ~~~ VIEWS ~~~
 
 @app.route('/')
 @view('index')
@@ -67,17 +83,140 @@ def stop():
 
 # ~~~ API ~~~
 
+def APIResponse(status, **kwargs):
+    dico = kwargs
+    dico["status"] = status
+    return dico
+
+
 @app.get('/api/play/')
 @app.get('/api/play/<url:path>')
 def api_play(url=None):
     app.radio.play(url)
-    return {'status': 'success'}
+    return APIResponse('success')
 
 
 @app.get('/api/stop/')
 def api_stop():
     app.radio.stop()
-    return {'status': 'success'}
+    return APIResponse('success')
+
+
+@app.get('/api/togglepause/')
+def api_togglepause():
+    app.radio.togglepause()
+    return APIResponse('success')
+
+
+@app.get('/api/infos/')
+def api_infos():
+    infos = {
+        'url': app.radio.url,
+        'playing': app.radio.is_playing,
+    }
+    return APIResponse('success', infos=infos)
+
+
+# Webradios
+
+@app.get('/api/webradios/')
+def api_list_webradios():
+    return APIResponse('success', webradios=Webradio.all(to_dict=True))
+
+
+@app.get('/api/webradios/<uuid>')
+def api_get_webradio(uuid):
+    found = Webradio.get(uuid=uuid)
+    if found is None:
+        return APIResponse('notfound')
+    return APIResponse('success', webradio=found.to_dict())
+
+
+@app.post('/api/webradios/')
+def api_add_webradio():
+    try:
+        r = Webradio(**request.json).save()
+    except AttributeRequired:
+        return APIResponse('attributerequired', details=Webradio.required_fields())
+    return APIResponse('success', webradio=r.to_dict())
+
+
+@app.delete('/api/webradios/<uuid>')
+def api_remove_webradio(uuid):
+    Webradio.remove(where('uuid') == uuid)
+    return APIResponse('success')
+
+
+@app.put('/api/webradios/<uuid>')
+@update_cron_after
+def api_edit_webradio(uuid):
+    in_db = Webradio.get(uuid=uuid)
+    if in_db is None:
+        return APIResponse('notfound')
+
+    for k, v in request.json.items():
+        setattr(in_db, k, v)
+    in_db.save()
+    return APIResponse('success', webradio=in_db.to_dict())
+
+
+# Alarms
+
+@app.get('/api/alarms/')
+def api_list_alarms():
+    return APIResponse('success', alarms=Alarm.all(to_dict=True))
+
+
+@app.get('/api/alarms/<uuid>')
+def api_get_alarm(uuid):
+    found = Alarm.get(uuid=uuid)
+    if found is None:
+        return APIResponse('notfound')
+    return APIResponse('success', alarm=found.to_dict())
+
+
+@app.post('/api/alarms/')
+@update_cron_after
+def api_add_alarm():
+    try:
+        r = Alarm(**request.json).save()
+    except AttributeRequired:
+        return APIResponse('attributerequired', details=Alarm.required_fields())
+    return APIResponse('success', alarm=r.to_dict())
+
+
+@app.delete('/api/alarms/<uuid>')
+@update_cron_after
+def api_remove_alarm(uuid):
+    Alarm.remove(where('uuid') == uuid)
+    return APIResponse('success')
+
+
+@app.put('/api/alarms/<uuid>')
+@update_cron_after
+def api_edit_alarm(uuid):
+    in_db = Alarm.get(uuid=uuid)
+    if in_db is None:
+        return APIResponse('notfound')
+
+    for k, v in request.json.items():
+        setattr(in_db, k, v)
+    in_db.save()
+    return APIResponse('success', alarm=in_db.to_dict())
+
+
+@app.get('/api/next_event/')
+def api_next_event():
+    try:
+        event = Alarm.next_event_overall()
+    except NoAlarms:
+        return APIResponse('success')
+    event = {
+        'time': event.time.isoformat(),
+        'alarm': event.alarm.to_dict(),
+        'type': event.type,
+    }
+    return APIResponse('success', event=event)
 
 
 # ~~~ MAIN ~~~

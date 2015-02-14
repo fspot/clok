@@ -8,6 +8,9 @@ from multiprocessing import Process, Queue
 from pyradio.log import Log
 from pyradio.player import MpPlayer
 
+from . import PY3
+input = input if PY3 else raw_input
+
 
 class RadioWrapped(object):
 
@@ -114,21 +117,3 @@ class Radio(object):
     def kill(self):
         self.cmd_queue.put({'type': 'EXIT'})
         self.process.join()
-
-
-def main():
-    import sys
-    url = sys.argv[-1]
-
-    try:
-        radio = Radio()
-        radio.play(url)
-        raw_input("Press any key to stop... ")
-        radio.stop()
-        raw_input("Done. [Press any key to exit]")
-    except KeyboardInterrupt:
-        radio.kill()
-
-
-if __name__ == '__main__':
-    main()

@@ -16,7 +16,7 @@ def event_process(event):
     """ Sleeps some time, then hits a url. """
     logger = Logger('cron')
     logger.setup()
-    sleeptime = (event.time - datetime.now()).total_seconds
+    sleeptime = (event.time - datetime.now()).total_seconds()
     logger.info('will sleep for %d seconds', sleeptime)
     sleep(sleeptime)
     logger.info('will hit a url ! [%s]', "START" if AlarmEvent.START else "STOP")
