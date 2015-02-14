@@ -38,7 +38,7 @@ class Alarm(Base):
         return '<Alarm start=%d:%02d>' % (self.start / 3600, (self.start % 3600) / 60)
 
     def get_webradio(self):
-        return Webradio.get(eid=self.webradio)
+        return Webradio.get(uuid=self.webradio)
 
     def humanize(self):
         """ [Radio Canut] Lu-Ma-Me-Je-Ve (7:00 -> 7:30) """

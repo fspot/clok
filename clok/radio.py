@@ -55,7 +55,7 @@ class Radio(object):
                 try:
                     msg = cmd_queue.get()
                 except KeyboardInterrupt:
-                    pass
+                    return
                 if msg['type'] == 'play':
                     url = msg.get('url')
                     radio.play(url)

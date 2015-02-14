@@ -117,6 +117,12 @@ def api_infos():
     return APIResponse('success', infos=infos)
 
 
+@app.get('/api/update/')
+@update_cron_after
+def api_update():
+    return APIResponse('success')
+
+
 # Webradios
 
 @app.get('/api/webradios/')
@@ -142,8 +148,10 @@ def api_add_webradio():
 
 
 @app.delete('/api/webradios/<uuid>')
+@update_cron_after
 def api_remove_webradio(uuid):
     Webradio.remove(where('uuid') == uuid)
+    Alarm.remove(where('webradio') == uuid)
     return APIResponse('success')
 
 
@@ -238,7 +246,7 @@ def main():
     app.cron = CronService()
     app.cron.update()
     try:
-        app.run(host=HOST, port=PORT, debug=DEBUG)
+        app.run(host=HOST, port=PORT, debug=DEBUG, server='waitress')
     except KeyboardInterrupt:
         app.radio.kill()
 

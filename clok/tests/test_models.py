@@ -79,9 +79,9 @@ def test_alarm_crud(test_db):
 def test_alarm_get_webradio(test_db):
     setup_db(test_db)
     radio = Webradio(name="Lulz", url="http://example.com").save()
-    a = Alarm(days=[], start=0, webradio=radio.eid).save()
+    a = Alarm(days=[], start=0, webradio=radio.uuid).save()
     assert a.eid == 1  # not affected by 'test_alarm_save'
-    assert a.get_webradio().uuid == radio.uuid
+    assert a.get_webradio().eid == radio.eid
 
 
 def test_next_alarm_overall(test_db):

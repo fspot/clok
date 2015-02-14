@@ -17,16 +17,27 @@ def event_process(event):
     logger = Logger('cron')
     logger.setup()
     sleeptime = (event.time - datetime.now()).total_seconds()
+
     logger.info('will sleep for %d seconds', sleeptime)
-    sleep(sleeptime)
-    logger.info('will hit a url ! [%s]', "START" if AlarmEvent.START else "STOP")
+    try:
+        sleep(sleeptime)
+    except KeyboardInterrupt:
+        return
+
+    logger.info('will hit a url ! [%s]', "START" if event.type == AlarmEvent.START else "STOP")
     clokc = ClokClient()
     if event.type == AlarmEvent.START:
-        clokc.play(event.alarm.url)
+        resp = clokc.play(event.alarm.refresh().get_webradio().url)
     elif event.type == AlarmEvent.STOP:
-        clokc.stop()
+        resp = clokc.stop()
     else:
         raise NotImplementedError
+    if resp.json()['status'] != 'success':
+        logger.error('failed to play/stop ?')
+
+    resp = clokc.update()
+    if resp.json()['status'] != 'success':
+        logger.error('failed to update ?')
 
 
 class CronService(object):

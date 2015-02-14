@@ -34,7 +34,9 @@ class HttpClient(object):
             url = urljoin(self.url_prefix, url)
         if 'verify' not in kwargs:
             kwargs['verify'] = False
-        if not 'headers' not in kwargs:
+        if 'stream' not in kwargs:
+            kwargs['stream'] = False
+        if 'headers' not in kwargs:
             kwargs['headers'] = dict(self.headers)
         return req_func(url, *args, **kwargs)
 
@@ -56,49 +58,61 @@ class HttpClient(object):
 
 class ClokClient(HttpClient):
     def __init__(self, host=DEFAULT_HOST):
-        super(HttpClient, self).__init__(url_prefix=host)
+        super(ClokClient, self).__init__(
+            url_prefix=host,
+            headers={'Connection': 'close'},
+        )
 
     def play(self, stream=None):
         if stream:
-            return self.get('/play/%s' % stream)
-        return self.get('/play/')
+            return self.get('play/%s' % stream)
+        return self.get('play/')
 
     def stop(self):
-        return self.get('/stop/')
-
-    def get_status(self):
-        raise NotImplementedError
-
-    def get_next_event(self):
-        raise NotImplementedError
+        return self.get('stop/')
 
     def pause(self):
-        raise NotImplementedError
+        return self.get('pause/')
+
+    def get_infos(self):
+        return self.get('infos/')
+
+    def get_next_event(self):
+        return self.get('next_event/')
+
+    def update(self):
+        return self.get('update/')
 
     # ALARMS
 
     def list_alarms(self):
-        raise NotImplementedError
+        return self.get('alarms/')
+
+    def get_alarm(self, alarm_uuid):
+        return self.get('alarms/%s' % alarm_uuid)
 
     def add_alarm(self, data):
         raise NotImplementedError
 
-    def remove_alarm(self, alarm_id):
-        raise NotImplementedError
+    def remove_alarm(self, alarm_uuid):
+        return self.delete('alarms/%s' % alarm_uuid)
 
     def edit_alarm(self, alarm):
         raise NotImplementedError
 
     # RADIOS
 
-    def list_radios(self):
+    def list_webradios(self):
+        return self.get('webradios/')
+
+    def get_webradio(self, radio_uuid):
+        return self.get('webradios/%s' % radio_uuid)
+
+    def add_webradio(self, data):
         raise NotImplementedError
 
-    def add_radio(self, data):
-        raise NotImplementedError
+    def remove_webradio(self, radio_uuid):
+        return self.delete('webradios/%s' % radio_uuid)
 
-    def remove_radio(self, radio_id):
-        raise NotImplementedError
-
-    def edit_radio(self, radio):
+    def edit_webradio(self, radio):
         raise NotImplementedError
