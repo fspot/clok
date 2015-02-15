@@ -26,7 +26,7 @@ from __future__ import unicode_literals, absolute_import
 from os.path import dirname, abspath, join
 from functools import wraps
 
-from bottle import Bottle, view, request, redirect, TEMPLATE_PATH
+from bottle import Bottle, view, request, redirect, TEMPLATE_PATH, static_file
 from docopt import docopt
 from tinydb import TinyDB, where
 
@@ -35,10 +35,11 @@ from .radio import Radio
 from .cron import CronService
 from .log import Logger
 from .models import (
-    setup_db, Alarm, NoAlarms, AlarmEvent, Webradio, AttributeRequired
+    setup_db, Alarm, NoAlarms, Webradio, AttributeRequired
 )
 
 app = Bottle()
+HERE = abspath(dirname(__file__))
 
 
 # ~~~ UTILS ~~~
@@ -50,6 +51,28 @@ def update_cron_after(func):
         app.cron.update()
         return ret
     return wrapper
+
+
+# ~~~ Static Routes ~~~
+
+@app.get('/<filename:re:.*\.js>')
+def javascripts(filename):
+    return static_file(filename, root=join(HERE, 'static', "js"))
+
+
+@app.get('/<filename:re:.*\.css>')
+def stylesheets(filename):
+    return static_file(filename, root=join(HERE, 'static', "css"))
+
+
+@app.get('/<filename:re:.*\.(jpg|png|gif|ico)>')
+def images(filename):
+    return static_file(filename, root=join(HERE, 'static', "img"))
+
+
+@app.get('/<filename:re:.*\.(eot|ttf|woff|svg)>')
+def fonts(filename):
+    return static_file(filename, root=join(HERE, 'static', "fonts"))
 
 
 # ~~~ VIEWS ~~~
@@ -140,8 +163,9 @@ def api_get_webradio(uuid):
 
 @app.post('/api/webradios/')
 def api_add_webradio():
+    data = request.json or request.forms
     try:
-        r = Webradio(**request.json).save()
+        r = Webradio(**data).save()
     except AttributeRequired:
         return APIResponse('attributerequired', details=Webradio.required_fields())
     return APIResponse('success', webradio=r.to_dict())
@@ -162,7 +186,8 @@ def api_edit_webradio(uuid):
     if in_db is None:
         return APIResponse('notfound')
 
-    for k, v in request.json.items():
+    data = request.json or request.forms
+    for k, v in data.items():
         setattr(in_db, k, v)
     in_db.save()
     return APIResponse('success', webradio=in_db.to_dict())
@@ -186,8 +211,9 @@ def api_get_alarm(uuid):
 @app.post('/api/alarms/')
 @update_cron_after
 def api_add_alarm():
+    data = request.json or request.forms
     try:
-        r = Alarm(**request.json).save()
+        r = Alarm(**data).save()
     except AttributeRequired:
         return APIResponse('attributerequired', details=Alarm.required_fields())
     return APIResponse('success', alarm=r.to_dict())
@@ -207,7 +233,8 @@ def api_edit_alarm(uuid):
     if in_db is None:
         return APIResponse('notfound')
 
-    for k, v in request.json.items():
+    data = request.json or request.forms
+    for k, v in data.items():
         setattr(in_db, k, v)
     in_db.save()
     return APIResponse('success', alarm=in_db.to_dict())
@@ -236,7 +263,7 @@ def main():
     PORT = int(args['--port'])
     DBFILE = args['--database']
     DEBUG = args['--debug'] or False
-    TEMPLATE_PATH.append(join(abspath(dirname(__file__)), 'views'))
+    TEMPLATE_PATH.append(join(HERE, 'views'))
 
     app.logger = Logger('clok')
     app.logger.setup()  # TODO : setup according to args['--log']

@@ -21,7 +21,8 @@ class RadioWrapped(object):
 
     def play(self, url=None):
         self.url = url or self.url
-        self._player.play(self.url)
+        if self.url is not None:
+            self._player.play(self.url)
 
     def stop(self):
         if self.is_playing():
