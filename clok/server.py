@@ -83,27 +83,6 @@ def index():
     return {'url': app.radio.url, 'playing': app.radio.is_playing}
 
 
-@app.get('/play/')
-@app.get('/play/<url:path>')
-@view('play')
-def play_get(url=None):
-    app.radio.play(url)
-    return {'url': app.radio.url}
-
-
-@app.post('/play/')
-@view('play')
-def play_post():
-    app.radio.play(request.forms.get('url'))
-    return {'url': app.radio.url}
-
-
-@app.route('/stop/')
-def stop():
-    app.radio.stop()
-    redirect("/")
-
-
 # ~~~ API ~~~
 
 def APIResponse(status, **kwargs):
