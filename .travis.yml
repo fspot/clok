@@ -5,7 +5,7 @@ env:
     - TOX_ENV=py34
     - TOX_ENV=pypy
 install:
-    - pip install tox coveralls
+    - pip install tox pytest pytest-mock pytest-cov coveralls
 script:
     - tox -e $TOX_ENV
     - if [[ $TOX_ENV == py27 ]]; then
