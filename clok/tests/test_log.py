@@ -35,7 +35,7 @@ def test_logger(mocker):
     l.setup(type='file', filename='foo.test')
 
     m_FileHandler.assert_called_with('foo.test')
-    m_handler.setLevel.assert_called_with(logging.DEBUG)
+    m_handler.setLevel.assert_called_with(logging.INFO)
 
     # Syslog setup
     m_SysLogHandler = mocker.patch('clok.log.logging.handlers.SysLogHandler', autospec=True)
