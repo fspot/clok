@@ -1,13 +1,6 @@
 var container = document.getElementById('everything');
 
 function ajaxget(url, onSuccess, onError) {
-  // return reqwest({
-  //   url: url,
-  //   type: 'json',
-  //   method: 'get',
-  //   error: onError || function() {},
-  //   success: onSuccess || function() {}
-  // });
   return qwest.get(url).then(
     onSuccess || function() {}
   ).catch(
@@ -16,13 +9,6 @@ function ajaxget(url, onSuccess, onError) {
 }
 
 function ajaxdelete(url, onSuccess, onError) {
-  // return reqwest({
-  //   url: url,
-  //   type: 'json',
-  //   method: 'delete',
-  //   error: onError || function() {},
-  //   success: onSuccess || function() {}
-  // });
   return qwest.delete(url).then(
     onSuccess || function() {}
   ).catch(
@@ -31,15 +17,6 @@ function ajaxdelete(url, onSuccess, onError) {
 }
 
 function ajaxpost(url, data, onSuccess, onError) {
-  // return reqwest({
-  //   url: url,
-  //   type: 'json',
-  //   // contentType: 'application/json',
-  //   method: 'post',
-  //   data: data,
-  //   error: onError || function() {},
-  //   success: onSuccess || function() {}
-  // });
   return qwest.post(url, {'__json_data': JSON.stringify(data)}).then(
     onSuccess || function() {}
   ).catch(
@@ -48,14 +25,6 @@ function ajaxpost(url, data, onSuccess, onError) {
 }
 
 function ajaxput(url, data, onSuccess, onError) {
-  // return reqwest({
-  //   url: url,
-  //   type: 'json',
-  //   method: 'put',
-  //   data: data,
-  //   error: onError || function() {},
-  //   success: onSuccess || function() {}
-  // });
   return qwest.put(url, {'__json_data': JSON.stringify(data)}).then(
     onSuccess || function() {}
   ).catch(
@@ -552,8 +521,6 @@ function wildcardView() {React.render(<App page="none" />, container);}
 // <ROUTES>
 
 var routes = {
-  // '/author': author,
-  // '/books/view/:bookId': viewBook
   '/webradios': webradioView,
   '/webradios/new': webradioAddView,
   '/webradios/edit/:uuid': webradioEditView,
