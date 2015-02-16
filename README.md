@@ -6,14 +6,23 @@ Clok
 [![Coverage Status](https://coveralls.io/repos/fspot/clok/badge.png)](https://coveralls.io/r/fspot/clok)
 [![License](https://pypip.in/license/clok/badge.svg)](https://pypi.python.org/pypi/clok/)
 
-Listen to radio and set up alarms from your computer, and control it from a web UI.
+Listen to radio and set up alarms from your computer, and control it from a web UI. Relies on `mplayer`.
 
+![Screenshot](https://lut.im/Kq4F6vuU/as1hYLr1)
+
+#### Features :
+
+- list / add / remove / edit radios and alarms
+- play / stop radios
+- easy to install (pure python dependencies) and to use (just type `clok`)
+- can be controlled via web ui or via REST API
 
 Installation
 ------------
 
 ```
-pip install clok
+$ sudo apt-get install mplayer
+$ pip install clok
 ```
 
 
