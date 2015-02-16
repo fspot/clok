@@ -1,18 +1,13 @@
 language: python
-env:
-    - TOX_ENV=py27
-    - TOX_ENV=py33
-    - TOX_ENV=py34
-    - TOX_ENV=pypy
+python:
+    - "2.7"
+    - "3.3"
+    - "3.4"
+    - "pypy"
 install:
     - pip install -r requirements.txt
-    - pip install tox pytest pytest-mock pytest-cov coveralls
+    - pip install pytest pytest-mock pytest-cov coveralls
 script:
-    - tox -e $TOX_ENV
-    - if [[ $TOX_ENV == py27 ]]; then
-          py.test --cov-report term-missing --cov clok clok;
-      fi
+    - py.test clok -v --cov clok --cov-report term-missing
 after_success:
-    - if [[ $TOX_ENV == py27 ]]; then
-          coveralls;
-      fi
+    - coveralls
