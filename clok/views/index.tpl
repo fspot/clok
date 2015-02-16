@@ -13,6 +13,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.2.0/lodash.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reqwest/1.1.5/reqwest.min.js"></script>
+<script src="https://raw.githubusercontent.com/pyrsmk/qwest/master/src/qwest.js"></script>
 <script src="https://rawgit.com/flatiron/director/master/build/director.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.12.2/react.min.js"></script>
 <script src="app.js"></script>

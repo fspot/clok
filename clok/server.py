@@ -25,8 +25,9 @@ from __future__ import unicode_literals, absolute_import
 
 from os.path import dirname, abspath, join
 from functools import wraps
+import json
 
-from bottle import Bottle, view, request, redirect, TEMPLATE_PATH, static_file
+from bottle import Bottle, view, request, TEMPLATE_PATH, static_file
 from docopt import docopt
 from tinydb import TinyDB, where
 
@@ -51,6 +52,12 @@ def update_cron_after(func):
         app.cron.update()
         return ret
     return wrapper
+
+
+def find_data_in(req):
+    if req.forms and '__json_data' in req.forms:
+        return json.loads(req.forms['__json_data'])
+    return req.json or req.forms
 
 
 # ~~~ Static Routes ~~~
@@ -142,7 +149,7 @@ def api_get_webradio(uuid):
 
 @app.post('/api/webradios/')
 def api_add_webradio():
-    data = request.json or request.forms
+    data = find_data_in(request)
     try:
         r = Webradio(**data).save()
     except AttributeRequired:
@@ -165,7 +172,7 @@ def api_edit_webradio(uuid):
     if in_db is None:
         return APIResponse('notfound')
 
-    data = request.json or request.forms
+    data = find_data_in(request)
     for k, v in data.items():
         setattr(in_db, k, v)
     in_db.save()
@@ -190,7 +197,7 @@ def api_get_alarm(uuid):
 @app.post('/api/alarms/')
 @update_cron_after
 def api_add_alarm():
-    data = request.json or request.forms
+    data = find_data_in(request)
     try:
         r = Alarm(**data).save()
     except AttributeRequired:
@@ -212,7 +219,7 @@ def api_edit_alarm(uuid):
     if in_db is None:
         return APIResponse('notfound')
 
-    data = request.json or request.forms
+    data = find_data_in(request)
     for k, v in data.items():
         setattr(in_db, k, v)
     in_db.save()

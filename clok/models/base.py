@@ -48,7 +48,9 @@ class Base(object):
         return instance
 
     def to_dict(self):
-        return self.get_table().get(eid=self.eid).copy()
+        found = self.get_table().get(eid=self.eid)
+        if found:
+            return found.copy()
 
     def save(self):
         fields = self.fields.keys()

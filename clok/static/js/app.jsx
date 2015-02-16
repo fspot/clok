@@ -1,45 +1,66 @@
 var container = document.getElementById('everything');
 
 function ajaxget(url, onSuccess, onError) {
-  return reqwest({
-    url: url,
-    type: 'json',
-    method: 'get',
-    error: onError || function() {},
-    success: onSuccess || function() {}
-  });
+  // return reqwest({
+  //   url: url,
+  //   type: 'json',
+  //   method: 'get',
+  //   error: onError || function() {},
+  //   success: onSuccess || function() {}
+  // });
+  return qwest.get(url).then(
+    onSuccess || function() {}
+  ).catch(
+    onError || function() {}
+  );
 }
 
 function ajaxdelete(url, onSuccess, onError) {
-  return reqwest({
-    url: url,
-    type: 'json',
-    method: 'delete',
-    error: onError || function() {},
-    success: onSuccess || function() {}
-  });
+  // return reqwest({
+  //   url: url,
+  //   type: 'json',
+  //   method: 'delete',
+  //   error: onError || function() {},
+  //   success: onSuccess || function() {}
+  // });
+  return qwest.delete(url).then(
+    onSuccess || function() {}
+  ).catch(
+    onError || function() {}
+  );
 }
 
 function ajaxpost(url, data, onSuccess, onError) {
-  return reqwest({
-    url: url,
-    type: 'json',
-    method: 'post',
-    data: data,
-    error: onError || function() {},
-    success: onSuccess || function() {}
-  });
+  // return reqwest({
+  //   url: url,
+  //   type: 'json',
+  //   // contentType: 'application/json',
+  //   method: 'post',
+  //   data: data,
+  //   error: onError || function() {},
+  //   success: onSuccess || function() {}
+  // });
+  return qwest.post(url, {'__json_data': JSON.stringify(data)}).then(
+    onSuccess || function() {}
+  ).catch(
+    onError || function() {}
+  );
 }
 
 function ajaxput(url, data, onSuccess, onError) {
-  return reqwest({
-    url: url,
-    type: 'json',
-    method: 'put',
-    data: data,
-    error: onError || function() {},
-    success: onSuccess || function() {}
-  });
+  // return reqwest({
+  //   url: url,
+  //   type: 'json',
+  //   method: 'put',
+  //   data: data,
+  //   error: onError || function() {},
+  //   success: onSuccess || function() {}
+  // });
+  return qwest.put(url, {'__json_data': JSON.stringify(data)}).then(
+    onSuccess || function() {}
+  ).catch(
+    onError || function() {}
+  );
 }
 
 var State = {
@@ -59,6 +80,7 @@ var State = {
     var that = this;
     return ajaxdelete('api/webradios/' + uuid, function() {
       _.remove(that.webradios, {'uuid': uuid});;
+      _.remove(that.alarms, {'webradio': uuid});;
     });
   },
   addWebradio: function(data) {
@@ -79,7 +101,7 @@ var State = {
     var that = this;
     return ajaxget('api/infos/', function(resp) {
       var radio = _.find(State.webradios, {'url': resp.infos.url});
-      that.whatsPlaying = radio.name || resp.infos.url;
+      that.whatsPlaying = (radio && radio.name) || resp.infos.url;
       that.isPlaying = resp.infos.playing;
     });
   },
@@ -100,7 +122,31 @@ var State = {
     }
   },
 
-  fetchAlarms: function() {},
+  fetchAlarms: function() {
+    var that = this;
+    return ajaxget('api/alarms/', function(resp) {
+      that.alarms = resp.alarms;
+    });
+  },
+  deleteAlarm: function(uuid) {
+    var that = this;
+    return ajaxdelete('api/alarms/' + uuid, function() {
+      _.remove(that.alarms, {'uuid': uuid});;
+    });
+  },
+  addAlarm: function(data) {
+    var that = this;
+    return ajaxpost('api/alarms/', data, function(resp) {
+      that.alarms = that.alarms.concat([resp.alarm]);
+    });
+  },
+  editAlarm: function(data) {
+    var that = this;
+    return ajaxput('api/alarms/' + data.uuid, data, function() {
+      var alarm = _.find(State.alarms, {'uuid': data.uuid});
+      _.merge(alarm, data);
+    });
+  },
 }
 
 
@@ -170,7 +216,7 @@ var WebradioList = React.createClass({
     });
     return (
       <div id="main">
-        <h1> > WEBRADIO LIST</h1>
+        <h1> > Radios</h1>
         <ul>
           {liNodes}
         </ul>
@@ -205,7 +251,129 @@ var WebradioForm = React.createClass({
       <form className="webradio-form pure-form" onSubmit={this.handleSubmit} >
         <input className="pure-input-1 my-input-1" type="text" ref="name" placeholder="Name" defaultValue={this.props.radio.name} /><br /><br />
         <input className="pure-input-1 my-input-1" type="url" ref="url" placeholder="Stream URL" defaultValue={this.props.radio.url} /><br /><br />
-        <input className="submit-button" type="submit" value={submitString} />
+        <div className="centered"><input className="submit-button" type="submit" value={submitString} /></div>
+      </form>
+    );
+  }
+});
+
+var AlarmItem = React.createClass({
+  deleteAlarmHandler: function(e) {
+    e.preventDefault();
+    if (confirm("Do you really want to delete this alarm ?")) {
+      this.props.deleteAlarm(this.props.alarm.uuid);
+    }
+  },
+  daysFormat: function() {
+    var stringDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
+    var days = this.props.alarm.days.map(function(day) {
+      return stringDays[day];
+    });
+    return days.join(',')
+  },
+  limitsFormat: function() {
+    var begin = this.props.alarm.start;
+    var end = begin + this.props.alarm.duration;
+    var begin = "" + Math.floor(begin / 3600) + ":" + Math.floor(begin % 3600 / 60);
+    var end = "" + Math.floor(end / 3600) + ":" + Math.floor(end % 3600 / 60);
+    return begin + ' -> ' + end;
+  },
+  render: function() {
+    var href = "#/alarms/edit/" + this.props.alarm.uuid;
+    var alarmDisabled = (this.props.alarm.disabled) ? "alarm-disabled" : "";
+    return (
+      <li className={alarmDisabled}>{this.props.radio.name} [{this.daysFormat()}] ({this.limitsFormat()}) − {' '}
+        <a className="edit-link" href={href}>[?]</a> | {' '}
+        <a className="del-link" onClick={this.deleteAlarmHandler} href="#/">[X]</a>
+      </li>
+    );
+  }
+});
+
+var AlarmList = React.createClass({
+  render: function() {
+    var that = this;
+    var liNodes = this.props.data.alarms.map(function(alarm) {
+      var radio = _.find(that.props.data.webradios, {'uuid': alarm.webradio});
+      return (
+        <AlarmItem alarm={alarm} radio={radio} deleteAlarm={that.props.deleteAlarm} />
+      );
+    });
+    return (
+      <div id="main">
+        <h1> > Alarms</h1>
+        <ul>
+          {liNodes}
+        </ul>
+        <a className="add-button" href="#/alarms/new">[+ add]</a>
+      </div>
+    );
+  }
+});
+
+var AlarmForm = React.createClass({
+  handleSubmit: function(e) {
+    e.preventDefault();
+    var webradio = this.refs.webradioChoice.getDOMNode().value;
+    var days = [];
+    if (this.refs.optmo.getDOMNode().checked) days.push(0);
+    if (this.refs.opttu.getDOMNode().checked) days.push(1);
+    if (this.refs.optwe.getDOMNode().checked) days.push(2);
+    if (this.refs.optth.getDOMNode().checked) days.push(3);
+    if (this.refs.optfr.getDOMNode().checked) days.push(4);
+    if (this.refs.optsa.getDOMNode().checked) days.push(5);
+    if (this.refs.optsu.getDOMNode().checked) days.push(6);
+    var start = (+this.refs.starthour.getDOMNode().value * 3600) + (+this.refs.startminute.getDOMNode().value * 60);
+    var duration = +this.refs.duration.getDOMNode().value * 60;
+    var disabled = this.refs.disabled.getDOMNode().checked;
+    if (this.props.alarm.uuid) { // EDIT
+      var alarm = _.assign(this.props.alarm, {
+        'webradio': webradio, 'days': days, 'start': start, 'duration': duration, 'disabled': disabled
+      });
+      this.props.editAlarm(alarm);
+    } else {
+      this.props.addAlarm({
+        'webradio': webradio, 'days': days, 'start': start, 'duration': duration, 'disabled': disabled
+      });
+    }
+    window.location.hash = '#/alarms';
+  },
+  getDefaultProps: function() {
+    return {alarm: {}};
+  },
+  render: function() {
+    var that = this;
+    var submitString = (this.props.alarm.uuid) ? "EDIT" : "ADD";
+    var webradioOptions = this.props.webradios.map(function(webradio) {
+        return (<option value={webradio.uuid}>{webradio.name}</option>);
+    });
+    return (
+      <form className="alarm-form pure-form" onSubmit={this.handleSubmit} >
+        <br />
+        <label for="webradio-choice">Webradio : </label>
+        <select ref="webradioChoice" id="webradio-choice" defaultValue={this.props.alarm.webradio} required>
+          {webradioOptions}
+        </select>
+        <br /><br />
+
+        <label for="opt-mo" class="pure-checkbox"><input id="opt-mo" ref="optmo" type="checkbox" defaultChecked={_.indexOf(this.props.alarm.days, 0) >= 0} value="0" />Mo</label>
+        <label for="opt-tu" class="pure-checkbox"><input id="opt-tu" ref="opttu" type="checkbox" defaultChecked={_.indexOf(this.props.alarm.days, 1) >= 0} value="1" />Tu</label>
+        <label for="opt-we" class="pure-checkbox"><input id="opt-we" ref="optwe" type="checkbox" defaultChecked={_.indexOf(this.props.alarm.days, 2) >= 0} value="2" />We</label>
+        <label for="opt-th" class="pure-checkbox"><input id="opt-th" ref="optth" type="checkbox" defaultChecked={_.indexOf(this.props.alarm.days, 3) >= 0} value="3" />Th</label>
+        <label for="opt-fr" class="pure-checkbox"><input id="opt-fr" ref="optfr" type="checkbox" defaultChecked={_.indexOf(this.props.alarm.days, 4) >= 0} value="4" />Fr</label>
+        <label for="opt-sa" class="pure-checkbox"><input id="opt-sa" ref="optsa" type="checkbox" defaultChecked={_.indexOf(this.props.alarm.days, 5) >= 0} value="5" />Sa</label>
+        <label for="opt-su" class="pure-checkbox"><input id="opt-su" ref="optsu" type="checkbox" defaultChecked={_.indexOf(this.props.alarm.days, 6) >= 0} value="6" />Su</label>
+        <br /><br />
+
+        <label for="starthour">Start time :</label><br />
+        <input id="starthour" className="pure-input-1-2 my-input-1 no-right-border" type="number" ref="starthour" placeholder="Hour" defaultValue={Math.floor((this.props.alarm.start || 25200) / 3600)} />
+        <input className="pure-input-1-2 my-input-1" type="number" ref="startminute" placeholder="Minutes" defaultValue={Math.floor((this.props.alarm.start || 1800) % 3600 / 60)} /><br /><br />
+
+        <label for="duration">Duration (minutes) :</label><br />
+        <input id="duration" className="pure-input-1 my-input-1" type="number" ref="duration" placeholder="Duration (minutes)" defaultValue={Math.floor((this.props.alarm.duration || 3600) / 60)} /><br /><br />
+
+        <label for="opt-disable" class="pure-checkbox"><input id="opt-disable" type="checkbox" ref="disabled" defaultChecked={this.props.alarm.disabled} />Disabled</label><br /><br />
+        <div className="centered"><input className="submit-button" type="submit" value={submitString} /></div>
       </form>
     );
   }
@@ -262,27 +430,107 @@ var App = React.createClass({
     });
   },
 
+  fetchAlarms: function() {
+    var that = this;
+    State.fetchAlarms().then(function() {
+      that.setState(State);
+    });
+  },
+  deleteAlarm: function(uuid) {
+    var that = this;
+    State.deleteAlarm(uuid).then(function() {
+      that.setState(State);
+      that.fetchWebradios();
+    });
+  },
+  addAlarm: function(data) {
+    var that = this;
+    State.addAlarm(data).then(function() {
+      that.setState(State);
+    });
+  },
+  editAlarm: function(data) {
+    var that = this;
+    State.editAlarm(data).then(function() {
+      that.setState(State);
+      that.fetchWebradios();
+    });
+  },
+
   componentDidMount: function() {
     this.fetchWebradios();
+    this.fetchAlarms();
     this.fetchInfos();
     State.webradiosInterval = setInterval(this.fetchWebradios, 10000);
+    State.alarmsInterval = setInterval(this.fetchAlarms, 10000);
     State.infosInterval = setInterval(this.fetchInfos, 5000);
   },
   componentWillUnmount: function() {
     clearInterval(State.webradiosInterval);
+    clearInterval(State.alarmsInterval);
     clearInterval(State.infosInterval);
   },
 
   render: function() {
     if (this.props.page === 'webradios') {
-      return (<div><NavBar /><PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} /><WebradioList data={this.state.webradios} deleteWebradio={this.deleteWebradio} playWebradio={this.playWebradio} /></div>);
+      return (
+        <div>
+          <NavBar />
+          <PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} />
+          <WebradioList data={this.state.webradios} deleteWebradio={this.deleteWebradio} playWebradio={this.playWebradio} />
+        </div>
+      );
     } else if (this.props.page === 'webradio-add') {
-      return (<div><NavBar /><PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} /><WebradioForm addWebradio={this.addWebradio} /></div>);
+      return (
+        <div>
+          <NavBar />
+          <PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} />
+          <WebradioForm addWebradio={this.addWebradio} />
+        </div>
+      );
     } else if (this.props.page === 'webradio-edit') {
       var radio = _.find(State.webradios, {'uuid': this.props.uuid});
-      return (<div><NavBar /><PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} /><WebradioForm radio={radio} editWebradio={this.editWebradio} /></div>);
+      return (
+        <div>
+          <NavBar />
+          <PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} />
+          <WebradioForm radio={radio} editWebradio={this.editWebradio} />
+        </div>
+      );
+    } else if (this.props.page === 'alarms') {
+      var data = {'alarms': this.state.alarms, 'webradios': this.state.webradios};
+      return (
+        <div>
+          <NavBar />
+          <PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} />
+          <AlarmList data={data} deleteAlarm={this.deleteAlarm} />
+        </div>
+      );
+    } else if (this.props.page === 'alarm-add') {
+      return (
+        <div>
+          <NavBar />
+          <PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} />
+          <AlarmForm webradios={this.state.webradios} addAlarm={this.addAlarm} />
+        </div>
+      );
+    } else if (this.props.page === 'alarm-edit') {
+      var alarm = _.find(State.alarms, {'uuid': this.props.uuid});
+      return (
+        <div>
+          <NavBar />
+          <PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} />
+          <AlarmForm webradios={this.state.webradios} alarm={alarm} editAlarm={this.editAlarm} />
+        </div>
+      );
     } else {
-      return (<div><NavBar /><PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} /><p>Woops !</p></div>);
+      return (
+        <div>
+          <NavBar />
+          <PlayerBar playerHandler={this.playerHandler} name={this.state.whatsPlaying} isPlaying={this.state.isPlaying} />
+          <p>Woops !</p>
+        </div>
+      );
     }
   }
 });
@@ -290,36 +538,37 @@ var App = React.createClass({
 
 // <VIEWS>
 
-function webradioView() {
-  React.render(<App page="webradios" />, container);
-}
+function webradioView() {React.render(<App page="webradios" />, container);}
+function webradioAddView() {React.render(<App page="webradio-add" />, container);}
+function webradioEditView(uuid) {React.render(<App page="webradio-edit" uuid={uuid} />, container);}
 
-function webradioAddView() {
-  React.render(<App page="webradio-add" />, container);
-}
+function alarmView() {React.render(<App page="alarms" />, container);}
+function alarmAddView() {React.render(<App page="alarm-add" />, container);}
+function alarmEditView(uuid) {React.render(<App page="alarm-edit" uuid={uuid} />, container);}
 
-function webradioEditView(uuid) {
-  React.render(<App page="webradio-edit" uuid={uuid} />, container);
-}
-
-function wildcardView() {
-  React.render(<App page="none" />, container);
-}
+function wildcardView() {React.render(<App page="none" />, container);}
 
 
 // <ROUTES>
 
 var routes = {
   // '/author': author,
-  // '/books': [books, function() {console.log("An inline route handler."); }],
   // '/books/view/:bookId': viewBook
   '/webradios': webradioView,
   '/webradios/new': webradioAddView,
   '/webradios/edit/:uuid': webradioEditView,
+
+  '/alarms': alarmView,
+  '/alarms/new': alarmAddView,
+  '/alarms/edit/:uuid': alarmEditView,
+
   '/*': wildcardView
 };
 
 var router = Router(routes);
-
 router.init();
-webradioView();
+
+if (window.location.hash.indexOf('/alarms') > -1)
+  alarmView();
+else
+  webradioView();

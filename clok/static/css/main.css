@@ -75,9 +75,29 @@ a.add-button {
   font-size: 1.4em;
 }
 
-.webradio-form {
+.webradio-form, .alarm-form {
+  text-align: left;
   margin: auto;
   max-width: 800px;
+  font-size: 1.5em;
+}
+
+.alarm-form input[type="checkbox"] {
+  margin-left: 15px;
+  margin-right: 5px;
+  border: #666 solid 2px !important;
+}
+
+.alarm-form select {
+  margin-left: 15px;
+  color: #FFF;
+  text-shadow: 1px 1px 1px #111;
+  background-color: #333 !important;
+  font-family: "Special Elite" !important;
+  border: #666 solid 3px !important;
+  padding: 10px 10px 5px 10px;
+  box-shadow: none !important;
+  font-size: 0.8em;
 }
 
 .my-input-1 {
@@ -86,7 +106,6 @@ a.add-button {
   border: #777 dashed 3px !important;
   box-shadow: none !important;
   font-family: "Special Elite" !important;
-  font-size: 1.5em;
 }
 
 .submit-button {
@@ -96,7 +115,6 @@ a.add-button {
   box-shadow: none !important;
   color: #7CFF66;
   border: #7CFF66 dashed 2px !important;
-  font-size: 1.5em;
 }
 
 input.submit-button:hover, button.submit-button:hover {
@@ -109,6 +127,7 @@ input.submit-button:hover, button.submit-button:hover {
 }
 
 #player {
+  font-size: 1.5em;
   margin-bottom: 20px;
 }
 
@@ -129,3 +148,5 @@ input.submit-button:hover, button.submit-button:hover {
 
 .no-right-border { border-right: none !important; }
 .no-left-border { border-left: none !important; }
+
+.alarm-disabled { opacity: 0.5; }
