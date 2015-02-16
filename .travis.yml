@@ -8,5 +8,10 @@ install:
     - pip install tox coveralls
 script:
     - tox -e $TOX_ENV
+    - if [[ $TOX_ENV == py27 ]]; then
+          py.test --cov-report term-missing --cov clok clok;
+      fi
 after_success:
-    - coveralls
+    - if [[ $TOX_ENV == py27 ]]; then
+          coveralls;
+      fi
