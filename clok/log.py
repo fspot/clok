@@ -27,6 +27,7 @@ class Logger(object):
         handler.setFormatter(logging.Formatter(format))
         self.logger.setLevel(level)
         self.logger.addHandler(handler)
+        self.logger.propagate = False
 
     def debug(self, *args, **kwargs): return self.logger.debug(*args, **kwargs)
 
