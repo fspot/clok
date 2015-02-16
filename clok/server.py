@@ -4,7 +4,7 @@
 """Clok
 
 Usage:
-  clok [-a ADDRESS -p PORT --database FILE --debug]
+  clok [-a ADDRESS -p PORT --database FILE --log LOG --debug]
   clok -h | --help
   clok -v | --version
 
@@ -17,6 +17,9 @@ Options:
                         [default: 0.0.0.0]
   -p --port PORT        Specify on which port to listen.
                         [default: 8000]
+  --log LOG             Specify where to log messages, and which level to set.
+                        Can be "stderr", "syslog", or a filename, followed by the level.
+                        [default: stderr:INFO]
   --debug               Debug mode, do not use.
 
 """
@@ -248,18 +251,22 @@ def main():
     HOST = args['--address']
     PORT = int(args['--port'])
     DBFILE = args['--database']
-    DEBUG = args['--debug'] or False
+    LOG_ARG, LOG_LVL = args['--log'].rsplit(':', 1)
+    if LOG_ARG not in ('stderr', 'syslog'):
+        LOG_SETUP = dict(type='file', filename=LOG_ARG, level=LOG_LVL)
+    else:
+        LOG_SETUP = dict(type=LOG_ARG, level=LOG_LVL)
     TEMPLATE_PATH.append(join(HERE, 'views'))
 
     app.logger = Logger('clok')
-    app.logger.setup()  # TODO : setup according to args['--log']
+    app.logger.setup(**LOG_SETUP)
     app.radio = Radio()
     db = TinyDB(DBFILE)
     setup_db(db)  # setup database for this process (main process)
-    app.cron = CronService()
+    app.cron = CronService(log_setup=LOG_SETUP)
     app.cron.update()
     try:
-        app.run(host=HOST, port=PORT, debug=DEBUG, server='waitress')
+        app.run(host=HOST, port=PORT, server='waitress')
     except KeyboardInterrupt:
         app.radio.kill()
 

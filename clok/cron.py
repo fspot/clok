@@ -12,10 +12,10 @@ from .log import Logger
 from .models import Alarm, AlarmEvent, NoAlarms
 
 
-def event_process(event):
+def event_process(event, log_setup):
     """ Sleeps some time, then hits a url. """
     logger = Logger('cron')
-    logger.setup()
+    logger.setup(**log_setup)
     sleeptime = (event.time - datetime.now()).total_seconds()
 
     logger.info('will sleep for %d seconds', sleeptime)
@@ -41,9 +41,10 @@ def event_process(event):
 
 
 class CronService(object):
-    def __init__(self):
+    def __init__(self, log_setup={}):
         self._process = None  # event_process
         self.logger = Logger('clok')
+        self.log_setup = log_setup
 
     def setup_alarm(self):
         """ Find the next alarm in db, launch its process. """
@@ -52,7 +53,7 @@ class CronService(object):
         except NoAlarms:
             self.logger.warn("no alarms !")
         else:
-            self._process = Process(target=event_process, args=[self.next_event])
+            self._process = Process(target=event_process, args=[self.next_event, self.log_setup])
             self._process.daemon = True
             self._process.start()
 

@@ -12,7 +12,7 @@ class Logger(object):
     def __init__(self, name='clok'):
         self.logger = logging.getLogger(name)
 
-    def setup(self, level='debug', format=None, type='stderr', filename=None):
+    def setup(self, level='info', format=None, type='stderr', filename=None):
         """ By default, will log on stderr from lvl DEBUG """
         level = getattr(logging, level.upper())
         if format is None:
