@@ -4,7 +4,7 @@
 """Clok
 
 Usage:
-  clok [-a ADDRESS -p PORT --database FILE --log LOG --debug]
+  clok [-a ADDRESS -p PORT --database FILE --log LOG]
   clok -h | --help
   clok -v | --version
 
@@ -20,7 +20,6 @@ Options:
   --log LOG             Specify where to log messages, and which level to set.
                         Can be "stderr", "syslog", or a filename, followed by the level.
                         [default: stderr:INFO]
-  --debug               Debug mode, do not use.
 
 """
 
