@@ -12,12 +12,24 @@ from . import PY3
 input = input if PY3 else raw_input
 
 
+class CustomMpPlayer(MpPlayer):
+    def __init__(self, *args, **kwargs):
+        super(CustomMpPlayer, self).__init__(*args, **kwargs)
+
+    def _buildStartOpts(self, *args, **kwargs):
+        # opts is like [PLAYER_CMD, "arg1", "arg2", ..., "argN", streamUrl]
+        opts = super(CustomMpPlayer, self)._buildStartOpts(*args, **kwargs)
+        opts.insert(1, '-loop')
+        opts.insert(2, '0')
+        return opts
+
+
 class RadioWrapped(object):
 
     def __init__(self, url=None):
         self.url = url
         self._log = Log()
-        self._player = MpPlayer(self._log)
+        self._player = CustomMpPlayer(self._log)
 
     def play(self, url=None):
         self.url = url or self.url

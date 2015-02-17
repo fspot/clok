@@ -219,7 +219,7 @@ var WebradioForm = React.createClass({
     return (
       <form className="webradio-form pure-form" onSubmit={this.handleSubmit} >
         <input className="pure-input-1 my-input-1" type="text" ref="name" placeholder="Name" defaultValue={this.props.radio.name} /><br /><br />
-        <input className="pure-input-1 my-input-1" type="url" ref="url" placeholder="Stream URL" defaultValue={this.props.radio.url} /><br /><br />
+        <input className="pure-input-1 my-input-1" type="text" ref="url" placeholder="Stream URL" defaultValue={this.props.radio.url} /><br /><br />
         <div className="centered"><input className="submit-button" type="submit" value={submitString} /></div>
       </form>
     );
