@@ -34,7 +34,7 @@ def test_radio(mocker):
 def test_radiowrapped(mocker):
     m_Log = mocker.patch('clok.radio.Log', autospec=True)
     m_log = m_Log.return_value
-    m_MpPlayer = mocker.patch('clok.radio.MpPlayer', autospec=True)
+    m_MpPlayer = mocker.patch('clok.radio.CustomMpPlayer', autospec=True)
     m_player = m_MpPlayer.return_value
     m_player.isPlaying.return_value = True
 
