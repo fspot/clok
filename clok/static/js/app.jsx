@@ -41,7 +41,7 @@ var State = {
 
   fetchWebradios: function() {
     var that = this;
-    return ajaxget('api/webradios/', function(resp) {
+    return ajaxget('api/webradios/', function(xhr, resp) {
       that.webradios = resp.webradios;
     });
   },
@@ -68,7 +68,7 @@ var State = {
 
   fetchInfos: function() {
     var that = this;
-    return ajaxget('api/infos/', function(resp) {
+    return ajaxget('api/infos/', function(xhr, resp) {
       var radio = _.find(State.webradios, {'url': resp.infos.url});
       that.whatsPlaying = (radio && radio.name) || resp.infos.url;
       that.isPlaying = resp.infos.playing;
@@ -93,7 +93,7 @@ var State = {
 
   fetchAlarms: function() {
     var that = this;
-    return ajaxget('api/alarms/', function(resp) {
+    return ajaxget('api/alarms/', function(xhr, resp) {
       that.alarms = resp.alarms;
     });
   },
@@ -105,7 +105,7 @@ var State = {
   },
   addAlarm: function(data) {
     var that = this;
-    return ajaxpost('api/alarms/', data, function(resp) {
+    return ajaxpost('api/alarms/', data, function(xhr, resp) {
       that.alarms = that.alarms.concat([resp.alarm]);
     });
   },
