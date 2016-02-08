@@ -18,6 +18,7 @@ def test_radio(mocker):
     r.cmd_queue.put.assert_called_with({
         'type': 'play',
         'url': None,
+        'shuffle': False,
     })
     r.stop()
     r.pause()
@@ -42,7 +43,7 @@ def test_radiowrapped(mocker):
     m_MpPlayer.assert_called_with(m_log)
 
     r.play()
-    m_player.play.assert_called_with('foourl')
+    m_player.play.assert_called_with('foourl', shuffle=False)
     assert r.get_url() == 'foourl'
 
     r.stop()
