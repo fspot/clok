@@ -29,6 +29,7 @@ class Alarm(Base):
         'duration': Field(default=30*60),
         'webradio': Field(default=None),
         'disabled': Field(default=False),
+        'shuffle': Field(default=False),
     }
 
     def __init__(self, **kwargs):

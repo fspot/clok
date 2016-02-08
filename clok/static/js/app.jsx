@@ -295,14 +295,15 @@ var AlarmForm = React.createClass({
     var start = (+this.refs.starthour.getDOMNode().value * 3600) + (+this.refs.startminute.getDOMNode().value * 60);
     var duration = +this.refs.duration.getDOMNode().value * 60;
     var disabled = this.refs.disabled.getDOMNode().checked;
+    var shuffle = this.refs.shuffle.getDOMNode().checked;
     if (this.props.alarm.uuid) { // EDIT
       var alarm = _.assign(this.props.alarm, {
-        'webradio': webradio, 'days': days, 'start': start, 'duration': duration, 'disabled': disabled
+        'webradio': webradio, 'days': days, 'start': start, 'duration': duration, 'disabled': disabled, 'shuffle': shuffle
       });
       this.props.editAlarm(alarm);
     } else {
       this.props.addAlarm({
-        'webradio': webradio, 'days': days, 'start': start, 'duration': duration, 'disabled': disabled
+        'webradio': webradio, 'days': days, 'start': start, 'duration': duration, 'disabled': disabled, 'shuffle': shuffle
       });
     }
     window.location.hash = '#/alarms';
@@ -342,6 +343,7 @@ var AlarmForm = React.createClass({
         <input id="duration" className="pure-input-1 my-input-1" type="number" ref="duration" placeholder="Duration (minutes)" defaultValue={Math.floor((this.props.alarm.duration || 3600) / 60)} /><br /><br />
 
         <label for="opt-disable" class="pure-checkbox"><input id="opt-disable" type="checkbox" ref="disabled" defaultChecked={this.props.alarm.disabled} />Disabled</label><br /><br />
+        <label for="opt-shuffle" class="pure-checkbox"><input id="opt-shuffle" type="checkbox" ref="shuffle" defaultChecked={this.props.alarm.shuffle} />Shuffle (playlists only)</label><br /><br />
         <div className="centered"><input className="submit-button" type="submit" value={submitString} /></div>
       </form>
     );

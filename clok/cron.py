@@ -27,7 +27,11 @@ def event_process(event, log_setup):
     logger.info('will hit a url ! [%s]', "START" if event.type == AlarmEvent.START else "STOP")
     clokc = ClokClient()
     if event.type == AlarmEvent.START:
-        resp = clokc.play(event.alarm.refresh().get_webradio().url)
+        event.alarm.refresh()
+        resp = clokc.play(
+            event.alarm.get_webradio().url,
+            shuffle=event.alarm.shuffle or 0
+        )
     elif event.type == AlarmEvent.STOP:
         resp = clokc.stop()
     else:
