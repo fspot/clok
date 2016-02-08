@@ -103,7 +103,8 @@ def APIResponse(status, **kwargs):
 @app.get('/api/play/')
 @app.get('/api/play/<url:path>')
 def api_play(url=None):
-    app.radio.play(url)
+    shuffle = bool(request.query.shuffle) or False
+    app.radio.play(url, shuffle=shuffle)
     return APIResponse('success')
 
 
@@ -113,9 +114,51 @@ def api_stop():
     return APIResponse('success')
 
 
+@app.get('/api/mute/')
+def api_mute():
+    app.radio.mute()
+    return APIResponse('success')
+
+
+@app.get('/api/go_backward/')
+def api_go_backward():
+    app.radio.go_backward()
+    return APIResponse('success')
+
+
+@app.get('/api/go_forward/')
+def api_go_forward():
+    app.radio.go_forward()
+    return APIResponse('success')
+
+
+@app.get('/api/previous_track/')
+def api_previous_track():
+    app.radio.previous_track()
+    return APIResponse('success')
+
+
+@app.get('/api/next_track/')
+def api_next_track():
+    app.radio.next_track()
+    return APIResponse('success')
+
+
+@app.get('/api/volume_down/')
+def api_volume_down():
+    app.radio.volume_down()
+    return APIResponse('success')
+
+
+@app.get('/api/volume_up/')
+def api_volume_up():
+    app.radio.volume_up()
+    return APIResponse('success')
+
+
 @app.get('/api/togglepause/')
 def api_togglepause():
-    app.radio.togglepause()
+    app.radio.toggle_pause()
     return APIResponse('success')
 
 

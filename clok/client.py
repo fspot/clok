@@ -63,25 +63,34 @@ class ClokClient(HttpClient):
             headers={'Connection': 'close'},
         )
 
-    def play(self, stream=None):
+    def play(self, stream=None, **kwargs):
         if stream:
-            return self.get('play/%s' % stream)
-        return self.get('play/')
+            return self.get('play/%s' % stream, params=kwargs)
+        return self.get('play/', params=kwargs)
 
-    def stop(self):
-        return self.get('stop/')
+    def stop(self): return self.get('stop/')
 
-    def pause(self):
-        return self.get('pause/')
+    def mute(self): return self.get('mute/')
 
-    def get_infos(self):
-        return self.get('infos/')
+    def go_backward(self): return self.get('go_backward/')
 
-    def get_next_event(self):
-        return self.get('next_event/')
+    def go_forward(self): return self.get('go_forward/')
 
-    def update(self):
-        return self.get('update/')
+    def previous_track(self): return self.get('previous_track/')
+
+    def next_track(self): return self.get('next_track/')
+
+    def volume_down(self): return self.get('volume_down/')
+
+    def volume_up(self): return self.get('volume_up/')
+
+    def pause(self): return self.get('togglepause/')
+
+    def get_infos(self): return self.get('infos/')
+
+    def get_next_event(self): return self.get('next_event/')
+
+    def update(self): return self.get('update/')
 
     # ALARMS
 
@@ -91,14 +100,14 @@ class ClokClient(HttpClient):
     def get_alarm(self, alarm_uuid):
         return self.get('alarms/%s' % alarm_uuid)
 
-    def add_alarm(self, data):
-        raise NotImplementedError
+    def add_alarm(self, **kwargs):
+        return self.post('alarms/', data=kwargs)
 
     def remove_alarm(self, alarm_uuid):
         return self.delete('alarms/%s' % alarm_uuid)
 
-    def edit_alarm(self, alarm):
-        raise NotImplementedError
+    def edit_alarm(self, alarm_uuid, **kwargs):
+        return self.put('alarms/%s' % alarm_uuid, data=kwargs)
 
     # RADIOS
 
@@ -108,11 +117,11 @@ class ClokClient(HttpClient):
     def get_webradio(self, radio_uuid):
         return self.get('webradios/%s' % radio_uuid)
 
-    def add_webradio(self, data):
-        raise NotImplementedError
+    def add_webradio(self, **kwargs):
+        return self.post('webradios/', data=kwargs)
 
     def remove_webradio(self, radio_uuid):
         return self.delete('webradios/%s' % radio_uuid)
 
-    def edit_webradio(self, radio):
-        raise NotImplementedError
+    def edit_webradio(self, radio_uuid, **kwargs):
+        return self.put('webradios/%s' % radio_uuid, data=kwargs)
