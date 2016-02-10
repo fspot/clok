@@ -167,6 +167,8 @@ def api_infos():
     infos = {
         'url': app.radio.url,
         'playing': app.radio.is_playing,
+        'muted': app.radio.is_muted,
+        'playlist': app.radio.is_playlist,
     }
     return APIResponse('success', infos=infos)
 

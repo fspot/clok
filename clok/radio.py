@@ -141,6 +141,7 @@ class Radio(object):
 
     def __init__(self):
         self.process, self.cmd_queue, self.answer_queue = Radio.radio_process()
+        self.is_muted = False
 
     def play(self, url=None, shuffle=False):
         self.cmd_queue.put({
@@ -165,7 +166,9 @@ class Radio(object):
 
     def go_forward(self): self.cmd_queue.put({'type': 'go_forward'})
 
-    def mute(self): self.cmd_queue.put({'type': 'mute'})
+    def mute(self):
+        self.cmd_queue.put({'type': 'mute'})
+        self.is_muted = not self.is_muted
 
     def previous_track(self): self.cmd_queue.put({'type': 'previous_track'})
 
@@ -184,6 +187,9 @@ class Radio(object):
 
     @property
     def url(self): return self.get_url()
+
+    @property
+    def is_playlist(self): return (self.url.split("?")[0][-3:] in ['m3u', 'pls'])
 
     def kill(self):
         self.cmd_queue.put({'type': 'EXIT'})
