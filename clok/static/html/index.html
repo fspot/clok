@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Clok</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+
+<!-- RADIOITEM COMPONENT -->
+<template id="radioitem-template">
+<span class="radio-item">
+  <span @click="radioClick" class="name">{{ radio.name }}</span><span class="edit"><i class="fa fa-cog"></i></span><span class="delete"><i class="fa fa-trash-o"></i></span>
+</span>
+</template>
+
+<!-- MENU COMPONENT -->
+<template id="menu-template">
+  <!-- Menu toggle -->
+  <a href="#menu" id="menuLink" class="menu-link" @click.prevent="menuClick">
+      <!-- Hamburger icon -->
+      <span></span>
+  </a>
+  <div id="menu">
+      <div class="pure-menu">
+          <a class="pure-menu-heading" href="#"><i class="fa fa-clock-o"></i> Clok</a>
+
+          <ul class="pure-menu-list">
+              <li class="pure-menu-item"><a href="#/webradios" class="pure-menu-link">Radios</a></li>
+              <li class="pure-menu-item"><a href="#/alarms" class="pure-menu-link">Alarms <strong>(6)</strong></a></li>
+          </ul>
+      </div>
+  </div>
+</template>
+
+<!-- WEBRADIO-PLAYER COMPONENT -->
+<template id="webradioplayer-template">
+<div class="header" v-if="!state.isStopped">
+  <h1>{{ state.whatsPlaying }}</h1>
+  <h2>
+    <a href="#" class="btn small grey"><i class="fa fa-backward"></i></a>
+    <a href="#" class="btn small grey"><i class="fa fa-forward"></i></a>
+    <a v-if="state.isPlaylist" href="#" class="btn small grey"><i class="fa fa-random"></i></a>
+    <a v-if="state.isPlaylist" href="#" class="btn small grey"><i class="fa fa-step-backward"></i></a>
+    <a v-if="state.isPlaylist" href="#" class="btn small grey"><i class="fa fa-step-forward"></i></a>
+    <a v-if="state.isPaused" href="#" class="btn small grey"><i class="fa fa-play"></i></a>
+    <a v-else href="#" class="btn small grey"><i class="fa fa-pause"></i></a>
+    <a v-if="!state.isMuted" href="#" class="btn small grey"><i class="fa fa-volume-down"></i></a>
+    <a v-if="!state.isMuted" href="#" class="btn small grey"><i class="fa fa-volume-up"></i></a>
+    <a href="#" class="btn small grey"><i class="fa fa-volume-off"></i></a>
+  </h2>
+</div>
+<div class="header" v-else>
+  <h1>Radios & musiques</h1>
+  <h2>Choisissez une radio ci-dessous</h2>
+</div>
+</template>
+
+<!-- WEBRADIO COMPONENT -->
+<template id="webradioview-template">
+<div id="main">
+  <webradio-player :state="state"></webradio-player>
+
+  <div class="content">
+    <div class="radio-item-list">
+      <radio-item v-for="radio in state.webradios" :radio="radio"></radio-item>
+    </div>
+
+    <div class="add-radio-btns">
+      <a href="#" class="btn grey"><i class="fa fa-plus"></i> Ajouter</a>
+      <a href="#" class="btn grey"><i class="fa fa-search"></i> Rechercher…</a>
+    </div>
+  </div>
+</div>
+</template>
+
+<!-- ALARMVIEW COMPONENT -->
+<template id="alarmview-template">
+<div id="main">
+  <div class="header">
+      <h1>Alarmes</h1>
+  </div>
+
+  <div class="content">
+    <p>{{state.test.x * 2}}</p>
+  </div>
+</div>
+</template>
+
+<!-- ROOT COMPONENT -->
+<div id="everything">
+  <div id="layout">
+    <menu></menu>
+    <webradio-view :state="$data" v-if="view === 'webradioView'"></webradio-view>
+    <alarm-view :state="$data" v-if="view === 'alarmView'"></alarm-view>
+  </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.2.0/lodash.min.js"></script>
+<script src="https://rawgit.com/pyrsmk/qwest/master/qwest.min.js"></script>
+<script src="https://rawgit.com/flatiron/director/master/build/director.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.16/vue.min.js"></script>
+
+<script src="app.js"></script>
+
+</body>
+</html>

@@ -79,14 +79,6 @@ class RadioWrapped(object):
 
     def toggle_pause(self): self._player.pause()
 
-    def pause(self):
-        if self.is_playing():
-            self._player.pause()
-
-    def unpause(self):
-        if not self.is_playing():
-            self._player.pause()
-
     def get_url(self):
         return self.url
 
@@ -107,10 +99,6 @@ class Radio(object):
                     radio.play(url, shuffle=shuffle)
                 elif msg['type'] == 'stop':
                     radio.stop()
-                elif msg['type'] == 'pause':
-                    radio.pause()
-                elif msg['type'] == 'unpause':
-                    radio.unpause()
                 elif msg['type'] == 'toggle_pause':
                     radio.toggle_pause()
                 elif msg['type'] == 'volume_up':
@@ -142,6 +130,7 @@ class Radio(object):
     def __init__(self):
         self.process, self.cmd_queue, self.answer_queue = Radio.radio_process()
         self.is_muted = False
+        self.is_paused = False
 
     def play(self, url=None, shuffle=False):
         self.cmd_queue.put({
@@ -152,11 +141,17 @@ class Radio(object):
 
     def stop(self): self.cmd_queue.put({'type': 'stop'})
 
-    def pause(self): self.cmd_queue.put({'type': 'pause'})
+    def toggle_pause(self):
+        self.cmd_queue.put({'type': 'toggle_pause'})
+        self.is_paused = not self.is_paused
 
-    def unpause(self): self.cmd_queue.put({'type': 'unpause'})
+    def pause(self):
+        if not self.is_paused:
+            self.toggle_pause()
 
-    def toggle_pause(self): self.cmd_queue.put({'type': 'toggle_pause'})
+    def unpause(self):
+        if self.is_paused:
+            self.toggle_pause()
 
     def volume_up(self): self.cmd_queue.put({'type': 'volume_up'})
 
@@ -189,7 +184,8 @@ class Radio(object):
     def url(self): return self.get_url()
 
     @property
-    def is_playlist(self): return (self.url.split("?")[0][-3:] in ['m3u', 'pls'])
+    def is_playlist(self):
+        return bool(self.url and self.url.split("?")[0][-3:] in ['m3u', 'pls'])
 
     def kill(self):
         self.cmd_queue.put({'type': 'EXIT'})

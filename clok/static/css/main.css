@@ -1,152 +1,362 @@
-@font-face {
-  font-family: 'Special Elite';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Special Elite'), local('SpecialElite-Regular'), url(special_elite.ttf) format('truetype');
+/******************************************/
+/* side-menu */
+/******************************************/
+
+#layout,
+#menu,
+.menu-link {
+    -webkit-transition: all 0.2s ease-out;
+    -moz-transition: all 0.2s ease-out;
+    -ms-transition: all 0.2s ease-out;
+    -o-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out;
 }
 
-* { box-sizing: border-box; }
-.centered { text-align: center; }
+/*
+This is the parent `<div>` that contains the menu and the content area.
+*/
+#layout {
+    position: relative;
+    padding-left: 0;
+}
+    #layout.active #menu {
+        left: 150px;
+        width: 150px;
+    }
 
-body {
-  background-color: #222;
-  font-family: "Special Elite";
-  color: #EEE;
-  text-align: center;
-  text-shadow: 1px 1px 2px #111;
+    #layout.active .menu-link {
+        left: 150px;
+    }
+/*
+The content `<div>` is where all your content goes.
+*/
+.content {
+    margin: 0 auto;
+    padding: 0 10px;
+    max-width: 1000px;
+    margin-bottom: 50px;
+    line-height: 1.6em;
+    /*text-align: center;*/
 }
 
-a:active, a:focus {
-  border: none !important;
-  outline: none !important;
+.header {
+     margin: 0;
+     color: #333;
+     text-align: center;
+     padding: 2.5em 2em 0;
+     border-bottom: 1px solid #eee;
+ }
+    .header h1 {
+        margin: 0.2em 0;
+        font-size: 3em;
+        font-weight: 300;
+    }
+     .header h2 {
+        font-weight: 300;
+        color: #ccc;
+        padding: 0;
+        margin-top: 0;
+    }
+
+.content-subhead {
+    margin: 50px 0 20px 0;
+    font-weight: 300;
+    color: #888;
 }
 
-a:active {
-  color: #7CFF66 !important;
+
+
+/*
+The `#menu` `<div>` is the parent `<div>` that contains the `.pure-menu` that
+appears on the left side of the page.
+*/
+
+#menu {
+    margin-left: -150px; /* "#menu" width */
+    width: 150px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000; /* so the menu or its navicon stays above all content */
+    background: #191818;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+    /*
+    All anchors inside the menu should be styled like this.
+    */
+    #menu a {
+        color: #999;
+        border: none;
+        padding: 0.6em 0 0.6em 0.6em;
+    }
+
+    /*
+    Remove all background/borders, since we are applying them to #menu.
+    */
+     #menu .pure-menu,
+     #menu .pure-menu ul {
+        border: none;
+        background: transparent;
+    }
+
+    /*
+    Add that light border to separate items into groups.
+    */
+    #menu .pure-menu ul,
+    #menu .pure-menu .menu-item-divided {
+        border-top: 1px solid #333;
+    }
+        /*
+        Change color of the anchor links on hover/focus.
+        */
+        #menu .pure-menu li a:hover,
+        #menu .pure-menu li a:focus {
+            background: #333;
+        }
+
+    /*
+    This styles the selected menu item `<li>`.
+    */
+    #menu .pure-menu-selected,
+    #menu .pure-menu-heading {
+        background: #3CE298;
+    }
+        /*
+        This styles a link within a selected menu item `<li>`.
+        */
+        #menu .pure-menu-selected a {
+            color: #fff;
+        }
+
+    /*
+    This styles the menu heading.
+    */
+    #menu .pure-menu-heading {
+        font-size: 110%;
+        color: #fff;
+        margin: 0;
+    }
+
+/* -- Dynamic Button For Responsive Menu -------------------------------------*/
+
+/*
+The button to open/close the Menu is custom-made and not part of Pure. Here's
+how it works:
+*/
+
+/*
+`.menu-link` represents the responsive menu toggle that shows/hides on
+small screens.
+*/
+.menu-link {
+    position: fixed;
+    display: block; /* show this only on small screens */
+    top: 0;
+    left: 0; /* "#menu width" */
+    background: #000;
+    background: rgba(0,0,0,0.7);
+    font-size: 13px; /* change this value to increase/decrease button size */
+    z-index: 10;
+    width: 2em;
+    height: auto;
+    padding: 2.1em 1.6em;
 }
 
-#nav {
-  text-align: center;
+    .menu-link:hover,
+    .menu-link:focus {
+        background: #000;
+    }
+
+    .menu-link span {
+        position: relative;
+        display: block;
+    }
+
+    .menu-link span,
+    .menu-link span:before,
+    .menu-link span:after {
+        background-color: #fff;
+        width: 100%;
+        height: 0.2em;
+    }
+
+        .menu-link span:before,
+        .menu-link span:after {
+            position: absolute;
+            margin-top: -0.6em;
+            content: " ";
+        }
+
+        .menu-link span:after {
+            margin-top: 0.6em;
+        }
+
+
+/* -- Responsive Styles (Media Queries) ------------------------------------- */
+
+/*
+Hides the menu at `48em`, but modify this based on your app's needs.
+*/
+@media (min-width: 48em) {
+
+    .header,
+    .content {
+        padding-left: 2em;
+        padding-right: 2em;
+    }
+
+    #layout {
+        padding-left: 150px; /* left col width "#menu" */
+        left: 0;
+    }
+    #menu {
+        left: 150px;
+    }
+
+    .menu-link {
+        position: fixed;
+        left: 150px;
+        display: none;
+    }
+
+    #layout.active .menu-link {
+        left: 150px;
+    }
 }
 
-#nav a {
-  display: inline-block;
-  padding: 20px 20px;
-  color: #FFF;
-  font-size: 1.5em;
-  text-decoration: none;
+@media (max-width: 48em) {
+    /* Only apply this when the window is small. Otherwise, the following
+    case results in extra padding on the left:
+        * Make the window small.
+        * Tap the menu to trigger the active state.
+        * Make the window large again.
+    */
+    #layout.active {
+        position: relative;
+        left: 150px;
+    }
 }
 
-#nav a:hover {
-  text-decoration: underline;
-  text-shadow: 0px 0px 5px #111, 2px 2px 3px #111
+/******************************************/
+/* my style */
+/******************************************/
+
+/* MENU */
+
+.pure-menu-item strong {
+    color: #3CE298;
 }
 
-#main {
-  margin: auto;
-  text-align: left;
-  max-width: 800px;
+/* BUTTONS */
+
+.btn {
+    box-sizing: border-box;
+
+    display: inline-block;
+    margin-bottom: 10px;
+
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1.3rem;
+    color: #FFF;
+    border: 0 rgba(0,0,0,0);
+    border-radius: 3px;
+    padding: 10px 16px 7px 16px;
 }
 
-#main h1 {
-  font-size: 3em;
+.btn.small {
+    font-size: 1rem;
+    padding: 8px 12px 5px 12px;
 }
 
-#main ul li {
-  font-size: 1.3em;
+.btn.grey {
+    background-color: #64D5A2;
+    border-bottom: 4px solid #47C48C;
+    text-shadow: 0px 1px 5px #47C48C;
 }
 
-a.play-link {
-  color: #5CF367;
+.btn.grey:hover {
+    background-color: #2EEE98;
+    border-bottom: 4px solid #00E57F;
+    text-shadow: 0px 1px 5px #00E57F;
 }
 
-a.edit-link {
-  color: #6CC1D3;
+.add-radio-btns {
+    margin-top: 30px;
+    text-align: center;
 }
 
-a.del-link {
-  color: #E75449;
+/* RADIO ITEMS */
+
+.radio-item-list {
+    margin-top: 30px;
+    margin-left: -7px;
 }
 
-a.add-button {
-  display: inline-block;
-  float: right;
-  color: #7CFF66;
-  font-size: 1.4em;
+.radio-item {
+    box-sizing: border-box;
+    display: inline-block;
+    font-size: 1.3em;
+    color: #FFF;
+    margin-bottom: 1.25em;
+    margin-left: 7px;
 }
 
-.webradio-form, .alarm-form {
-  text-align: left;
-  margin: auto;
-  max-width: 800px;
-  font-size: 1.5em;
+.radio-item .name {
+    border: 0 rgba(0,0,0,0);
+    padding: 10px 10px 7px 16px;
+    background-color: #191818;
+    border-bottom: 4px solid #199D60;
+    border-radius: 3px 0px 0px 3px;
+    text-shadow: 0px 1px 5px #22885A;
 }
 
-.alarm-form input[type="checkbox"] {
-  margin-left: 15px;
-  margin-right: 5px;
-  border: #666 solid 2px !important;
+.radio-item .name:hover {
+    cursor: pointer;
+    background-color: #18B66D;
+    border-bottom: 4px solid #69D9A7;
+    text-shadow: 0px 1px 5px #00874B;
 }
 
-.alarm-form select {
-  margin-left: 15px;
-  color: #FFF;
-  text-shadow: 1px 1px 1px #111;
-  background-color: #333 !important;
-  font-family: "Special Elite" !important;
-  border: #666 solid 3px !important;
-  padding: 10px 10px 5px 10px;
-  box-shadow: none !important;
-  font-size: 0.8em;
+/* Blue:
+    background-color: #0078E7;
+    border-bottom: 4px solid #0162BC;
+    text-shadow: 0px 1px 5px #094983;
+
+    background-color: #1F9CFF;
+    border-bottom: 4px solid #277BCC;
+    text-shadow: 0px 1px 5px #277BCC;
+*/
+
+.radio-item .edit {
+    border: 0 rgba(0,0,0,0);
+    padding: 10px 8px 7px 8px;
+    background-color: #F2AB0C;
+    border-bottom: 4px solid #D7990D;
+    text-shadow: 0px 1px 5px #93690A;
 }
 
-.my-input-1 {
-  background-color: #333;
-  color: #FFF;
-  border: #777 dashed 3px !important;
-  box-shadow: none !important;
-  font-family: "Special Elite" !important;
+.radio-item .edit:hover {
+    cursor: pointer;
+    background-color: #FFDB3F;
+    border-bottom: 4px solid #EEB021;
+    text-shadow: 0px 1px 5px #EEB021;
 }
 
-.submit-button {
-  background-color: #222;
-  padding: 10px 20px 5px 20px;
-  font-family: "Special Elite" !important;
-  box-shadow: none !important;
-  color: #7CFF66;
-  border: #7CFF66 dashed 2px !important;
+.radio-item .delete {
+    border: 0 rgba(0,0,0,0);
+    padding: 10px 10px 7px 8px;
+    background-color: #D83A2A;
+    border-bottom: 4px solid #B52416;
+    border-radius: 0px 3px 3px 0px;
+    text-shadow: 0px 1px 5px #8C1B10;
 }
 
-input.submit-button:hover, button.submit-button:hover {
-  opacity: 0.7;
+.radio-item .delete:hover {
+    cursor: pointer;
+    background-color: #FF4D52;
+    border-bottom: 4px solid #E61E16;
+    text-shadow: 0px 1px 5px #E61E16;
 }
-
-.submit-button:active {
-  border-color: #6B6FFF !important;
-  color: #6B6FFF;
-}
-
-#player {
-  font-size: 1.5em;
-  margin-bottom: 20px;
-}
-
-.not-a-button {
-  color: #DDD;
-  border-color: #DDD !important;
-}
-
-.blue-button {
-  color: #63BCFF;
-  border-color: #63BCFF !important;
-}
-
-.red-button {
-  color: #E84553;
-  border-color: #E84553 !important;
-}
-
-.no-right-border { border-right: none !important; }
-.no-left-border { border-left: none !important; }
-
-.alarm-disabled { opacity: 0.5; }

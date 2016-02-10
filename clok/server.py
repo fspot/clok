@@ -29,7 +29,7 @@ from os.path import dirname, abspath, join
 from functools import wraps
 import json
 
-from bottle import Bottle, view, request, TEMPLATE_PATH, static_file
+from bottle import Bottle, request, static_file
 from docopt import docopt
 from tinydb import TinyDB, where
 
@@ -87,9 +87,9 @@ def fonts(filename):
 # ~~~ VIEWS ~~~
 
 @app.route('/')
-@view('index')
 def index():
-    return {'url': app.radio.url, 'playing': app.radio.is_playing}
+    return static_file('index.html', root=join(HERE, 'static', "html"))
+    # return {'url': app.radio.url, 'playing': app.radio.is_playing}
 
 
 # ~~~ API ~~~
@@ -166,7 +166,8 @@ def api_togglepause():
 def api_infos():
     infos = {
         'url': app.radio.url,
-        'playing': app.radio.is_playing,
+        'stopped': not app.radio.is_playing,
+        'paused': app.radio.is_paused,
         'muted': app.radio.is_muted,
         'playlist': app.radio.is_playlist,
     }
@@ -300,7 +301,6 @@ def main():
         LOG_SETUP = dict(type='file', filename=LOG_ARG, level=LOG_LVL)
     else:
         LOG_SETUP = dict(type=LOG_ARG, level=LOG_LVL)
-    TEMPLATE_PATH.append(join(HERE, 'views'))
 
     app.logger = Logger('clok')
     app.logger.setup(**LOG_SETUP)
