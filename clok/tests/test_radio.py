@@ -49,10 +49,8 @@ def test_radiowrapped(mocker):
     r.stop()
     m_player.close.assert_called_with()
 
-    r.pause()
     r.toggle_pause()
     m_player.pause.assert_called_with()
 
     m_player.isPlaying.return_value = False
     assert r.is_playing() is False
-    r.unpause()

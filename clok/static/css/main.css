@@ -266,6 +266,10 @@ Hides the menu at `48em`, but modify this based on your app's needs.
     padding: 10px 16px 7px 16px;
 }
 
+.btn:active {
+    opacity: 0.5;
+}
+
 .btn.small {
     font-size: 1rem;
     padding: 8px 12px 5px 12px;
@@ -281,6 +285,42 @@ Hides the menu at `48em`, but modify this based on your app's needs.
     background-color: #2EEE98;
     border-bottom: 4px solid #00E57F;
     text-shadow: 0px 1px 5px #00E57F;
+}
+
+.btn.black {
+    background-color: #191818;
+    border-bottom: 4px solid #199D60;
+    text-shadow: 0px 1px 5px #22885A;
+}
+
+.btn.black:hover {
+    background-color: #18B66D;
+    border-bottom: 4px solid #69D9A7;
+    text-shadow: 0px 1px 5px #00874B;
+}
+
+.btn.red {
+    background-color: #D83A2A;
+    border-bottom: 4px solid #B52416;
+    text-shadow: 0px 1px 5px #8C1B10;
+}
+
+.btn.red:hover {
+    background-color: #FF4D52;
+    border-bottom: 4px solid #E61E16;
+    text-shadow: 0px 1px 5px #E61E16;
+}
+
+.btn.blue {
+    background-color: #0078E7;
+    border-bottom: 4px solid #0162BC;
+    text-shadow: 0px 1px 5px #094983;
+}
+
+.btn.blue:hover {
+    background-color: #1F9CFF;
+    border-bottom: 4px solid #277BCC;
+    text-shadow: 0px 1px 5px #277BCC;
 }
 
 .add-radio-btns {
@@ -320,17 +360,21 @@ Hides the menu at `48em`, but modify this based on your app's needs.
     text-shadow: 0px 1px 5px #00874B;
 }
 
-/* Blue:
-    background-color: #0078E7;
-    border-bottom: 4px solid #0162BC;
-    text-shadow: 0px 1px 5px #094983;
+.radio-item .name-selected {
+    border: 0 rgba(0,0,0,0);
+    padding: 10px 10px 7px 16px;
+    background-color: #2EEE98;
+    border-bottom: 4px solid #00E57F;
+    border-radius: 3px 0px 0px 3px;
+    text-shadow: 0px 1px 5px #00E57F;
+}
 
-    background-color: #1F9CFF;
-    border-bottom: 4px solid #277BCC;
-    text-shadow: 0px 1px 5px #277BCC;
-*/
+.radio-item .name-selected:hover {
+    cursor: pointer;
+}
 
 .radio-item .edit {
+    color: #FFF;
     border: 0 rgba(0,0,0,0);
     padding: 10px 8px 7px 8px;
     background-color: #F2AB0C;
@@ -343,6 +387,13 @@ Hides the menu at `48em`, but modify this based on your app's needs.
     background-color: #FFDB3F;
     border-bottom: 4px solid #EEB021;
     text-shadow: 0px 1px 5px #EEB021;
+}
+
+.radio-item .name:active,
+.radio-item .name-selected:active,
+.radio-item .edit:active,
+.radio-item .delete:active {
+    opacity: 0.5;
 }
 
 .radio-item .delete {
@@ -359,4 +410,16 @@ Hides the menu at `48em`, but modify this based on your app's needs.
     background-color: #FF4D52;
     border-bottom: 4px solid #E61E16;
     text-shadow: 0px 1px 5px #E61E16;
+}
+
+/* FORMS */
+
+.webradio-form {
+    margin-top: 20px;
+}
+
+@media (min-width: 48em) {
+    .my-input-1 {
+        margin-top: 15px;
+    }
 }

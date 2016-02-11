@@ -43,7 +43,8 @@ var ClokClient = function() {
 
   this.play = function(stream, options, onSuccess, onError) {
     stream = stream || '';
-    if (options && options.shuffle) {
+    options = options || {};
+    if (options.shuffle) {
       stream += '?shuffle=y';
     }
     return this.ajax.GET('play/' + stream, onSuccess, onError);
@@ -151,38 +152,42 @@ var State = function () {
   this.alarms = [];
 
   this.whatsPlaying = null;
+  this.whatsPlayingURL = null;
   this.isStopped = null;
   this.isPaused = null;
   this.isMuted = null;
   this.isPlaylist = null;
 
   this.view = null;
+  this.viewData = null;
 
   this.fetchInfos = function() {
     return that.clokc.get_infos(function(xhr, resp) {
       var radio = _.find(that.webradios, {'url': resp.infos.url});
       that.whatsPlaying = (radio && radio.name) || resp.infos.url;
+      that.whatsPlayingURL = resp.infos.url;
       that.isStopped = resp.infos.stopped;
       that.isPaused = resp.infos.paused;
       that.isMuted = resp.infos.muted;
-      that.isPlaylist = resp.infos.muted;
+      that.isPlaylist = resp.infos.playlist;
     });
   };
-  this.playWebradio = function(uuid) {
+  this.playWebradio = function(uuid, shuffle) {
     var radio = _.find(this.webradios, {'uuid': uuid});
-    return this.clokc.play(radio.url, null, that.fetchInfos);
+    var options = shuffle ? {'shuffle': 'y'} : null;
+    return this.clokc.play(radio.url, options, that.fetchInfos);
   };
-  this.playerHandler = function() {
-    if (this.isPlaying) {
-      return this.clokc.stop(function() {
-        that.isPlaying = false;
-      });
-    } else {
-      return this.clokc.play('', function() {
-        that.isPlaying = true;
-      });
-    }
+  this.shuffle = function() {
+    var radio = _.find(this.webradios, {'url': this.whatsPlayingURL});
+    this.playWebradio(radio.uuid, true);
   };
+  this.stop = function() {
+    return this.clokc.stop(function() {
+      that.isStopped = true;
+      that.fetchInfos();
+    });
+  };
+
   this.go_backward = function() { return this.clokc.go_backward(); };
   this.go_forward = function() { return this.clokc.go_forward(); };
   this.previous_track = function() { return this.clokc.previous_track(); };
@@ -190,7 +195,7 @@ var State = function () {
   this.volume_down = function() { return this.clokc.volume_down(); };
   this.volume_up = function() { return this.clokc.volume_up(); };
   this.mute = function() { this.clokc.mute(that.fetchInfos); };
-  this.pause = function() { return this.clokc.pause(); };
+  this.pause = function() { return this.clokc.pause(that.fetchInfos); };
 
   // ALARMS
 
@@ -225,8 +230,7 @@ var State = function () {
   };
   this.deleteWebradio = function(uuid) {
     return this.clokc.remove_webradio(uuid, function() {
-      _.remove(that.webradios, {'uuid': uuid});
-      _.remove(that.alarms, {'webradio': uuid});
+      that.fetchWebradios();
     });
   };
   this.addWebradio = function(data) {
@@ -253,10 +257,21 @@ Vue.component('webradio-player', {
 
 Vue.component('radio-item', {
   template: '#radioitem-template',
-  props: ['radio'],
+  props: ['radio', 'state', 'selected'],
   methods: {
     radioClick: function() {
-      state.playWebradio(this.radio.uuid);
+      if (this.selected)
+        this.state.stop();
+      else
+        this.state.playWebradio(this.radio.uuid);
+    },
+    deleteRadioClick: function() {
+      if (confirm("Do you really want to delete radio [" + this.radio.name + "] ?")) {
+        if (this.selected) {
+          this.state.stop();
+        }
+        this.state.deleteWebradio(this.radio.uuid);
+      }
     }
   }
 });
@@ -301,6 +316,37 @@ Vue.component('webradio-view', {
   props: ['state'],
 });
 
+Vue.component('webradio-edit-view', {
+  template: '#webradioeditview-template',
+  props: ['state', 'isEdit'],
+  data: function() {
+    if (!this.isEdit)
+      return {'radio': {'name': '', 'url': ''}};
+    var radio = _.find(this.state.webradios, {'uuid': this.state.viewData.uuid});
+    return {'radio': radio};
+  },
+  methods: {
+    submit: function() {
+      this.radio.name = this.radio.name.trim();
+      this.radio.url = this.radio.url.trim();
+      if (!this.radio.name || !this.radio.url) {
+        return;
+      }
+      if (this.isEdit) {
+        this.state.editWebradio(this.radio);
+      } else {
+        this.state.addWebradio(this.radio);
+      }
+      this.state.fetchWebradios();
+      window.location.hash = '#/webradios';
+    },
+    cancel: function() {
+      this.state.fetchWebradios();
+      window.location.hash = '#/webradios';
+    }
+  }
+});
+
 Vue.component('alarm-view', {
   template: '#alarmview-template',
   props: ['state'],
@@ -327,18 +373,15 @@ var vm = new Vue({
 
 // <ROUTES>
 
-function alarmView() {
-  state.view = 'alarmView';
-};
-
-function webradioView() {
-  state.view = 'webradioView';
-};
+function alarmView() { state.view = 'alarmView'; };
+function webradioView() { state.view = 'webradioView'; };
+function webradioEditView(uuid) { state.view = 'webradioEditView'; state.viewData = {'uuid': uuid}; };
+function webradioCreateView() { state.view = 'webradioCreateView'; };
 
 var routes = {
   '/webradios': webradioView,
-  // '/webradios/new': webradioAddView,
-  // '/webradios/edit/:uuid': webradioEditView,
+  '/webradios/new': webradioCreateView,
+  '/webradios/edit/:uuid': webradioEditView,
 
   '/alarms': alarmView,
   // '/alarms/new': alarmAddView,
@@ -350,7 +393,6 @@ var routes = {
 var router = Router(routes);
 router.init();
 
-// if (window.location.hash.indexOf('/alarms') > -1)
-//   alarmView();
-// else
-//   webradioView();
+if (window.location.hash.indexOf('/alarms') === -1 && window.location.hash.indexOf('/webradios') === -1) {
+  window.location.hash = '#/webradios';
+}
