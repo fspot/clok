@@ -1,4 +1,3 @@
-var container = document.getElementById('everything');
 var DEFAULT_URL_PREFIX = "api/";
 
 var AjaxService = function(url_prefix) {
@@ -264,7 +263,7 @@ Vue.component('radio-item', {
         this.state.playWebradio(this.radio.uuid);
     },
     deleteRadioClick: function() {
-      if (confirm("Do you really want to delete radio [" + this.radio.name + "] ?")) {
+      if (confirm(this.$t('confirm.deleteRadio'))) {
         if (this.selected) {
           this.state.stop();
         }
@@ -279,33 +278,20 @@ Vue.component('menu', {
   props: ['nbAlarms'],
   methods: {
     menuClick: function() {
-      var layout   = document.getElementById('layout'),
-          menu     = document.getElementById('menu'),
-          menuLink = document.getElementById('menuLink');
-
       function toggleClass(element, className) {
-          var classes = element.className.split(/\s+/),
-              length = classes.length,
-              i = 0;
-
-          for(; i < length; i++) {
-            if (classes[i] === className) {
-              classes.splice(i, 1);
-              break;
-            }
+          var classes = element.className.split(/\s+/);
+          var found = classes.indexOf(className);
+          if (found !== -1) {
+            classes.splice(found, 1);
+          } else {
+            classes.push(className);
           }
-          // The className is not found
-          if (length === classes.length) {
-              classes.push(className);
-          }
-
           element.className = classes.join(' ');
       }
 
-      var active = 'active';
-      toggleClass(layout, active);
-      toggleClass(menu, active);
-      toggleClass(menuLink, active);
+      toggleClass(document.getElementById('layout'), 'active');
+      toggleClass(document.getElementById('menu'), 'active');
+      toggleClass(document.getElementById('menuLink'), 'active');
     }
   }
 });
@@ -359,7 +345,11 @@ Vue.component('alarm-item', {
       return radio;
     },
     daysFormat: function() {
-      var stringDays = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'];
+      var stringDays = [
+        this.$t('day.monday'), this.$t('day.tuesday'), this.$t('day.wednesday'),
+        this.$t('day.thursday'), this.$t('day.friday'),
+        this.$t('day.saturday'), this.$t('day.sunday')
+      ];
       var days = this.alarm.days.map(function(day) {
         return stringDays[day];
       });
@@ -381,7 +371,7 @@ Vue.component('alarm-item', {
   },
   methods: {
     deleteAlarmClick: function() {
-      if (confirm("Do you really want to delete this alarm ?")) {
+      if (confirm(this.$t('confirm.deleteAlarm'))) {
         this.state.deleteAlarm(this.alarm.uuid);
       }
     }
@@ -442,7 +432,6 @@ Vue.component('alarm-edit-view', {
   },
   methods: {
     submit: function() {
-      console.log(this.alarm);
       if (!this.alarm.webradio || !this.alarm.days || this.alarm.days.length == 0) {
         return;
       }
