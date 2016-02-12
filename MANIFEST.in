@@ -1,6 +1,9 @@
-include *.md
+include README.md
 
-recursive-include clok *.html
-recursive-include clok *.js
-recursive-include clok *.css
-recursive-include clok *.ttf
+recursive-include clok/static/html *.html
+recursive-include clok/static/js *.js
+recursive-include clok/static/css *.css
+
+recursive-include clok/static/bower_components *.css
+recursive-include clok/static/bower_components *.ttf
+recursive-include clok/static/bower_components *.min.js

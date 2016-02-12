@@ -1,0 +1,27 @@
+{
+  "name": "static",
+  "authors": [
+    "fspot <fred@fspot.org>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "font-awesome": "^4.5.0",
+    "vue": "^1.0.16",
+    "lodash": "^4.3.0",
+    "qwest": "^4.0.0",
+    "director": "^1.2.8",
+    "pure-min": "http://yui.yahooapis.com/pure/0.6.0/pure-min.css"
+  }
+}

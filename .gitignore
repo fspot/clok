@@ -1,4 +1,5 @@
 *.py[cod]
+bower_components
 
 # C extensions
 *.so

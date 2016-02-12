@@ -188,12 +188,12 @@ var State = function () {
     });
   };
 
-  this.go_backward = function() { return this.clokc.go_backward(); };
-  this.go_forward = function() { return this.clokc.go_forward(); };
-  this.previous_track = function() { return this.clokc.previous_track(); };
-  this.next_track = function() { return this.clokc.next_track(); };
-  this.volume_down = function() { return this.clokc.volume_down(); };
-  this.volume_up = function() { return this.clokc.volume_up(); };
+  this.go_backward = function() { return this.clokc.go_backward(that.fetchInfos); };
+  this.go_forward = function() { return this.clokc.go_forward(that.fetchInfos); };
+  this.previous_track = function() { return this.clokc.previous_track(that.fetchInfos); };
+  this.next_track = function() { return this.clokc.next_track(that.fetchInfos); };
+  this.volume_down = function() { return this.clokc.volume_down(that.fetchInfos); };
+  this.volume_up = function() { return this.clokc.volume_up(that.fetchInfos); };
   this.mute = function() { this.clokc.mute(that.fetchInfos); };
   this.pause = function() { return this.clokc.pause(that.fetchInfos); };
 
@@ -206,18 +206,17 @@ var State = function () {
   };
   this.deleteAlarm = function(uuid) {
     return this.clokc.remove_alarm(uuid, function() {
-      _.remove(that.alarms, {'uuid': uuid});
+      that.fetchAlarms();
     });
   };
   this.addAlarm = function(data) {
     return this.clokc.add_alarm(data, function(xhr, resp) {
-      that.alarms = that.alarms.concat([resp.alarm]);
+      that.fetchAlarms();
     });
   };
   this.editAlarm = function(data) {
     return this.clokc.edit_alarm(data.uuid, data, function() {
-      var alarm = _.find(that.alarms, {'uuid': data.uuid});
-      _.merge(alarm, data);
+      that.fetchAlarms();
     });
   };
 
@@ -235,13 +234,12 @@ var State = function () {
   };
   this.addWebradio = function(data) {
     return this.clokc.add_webradio(data, function() {
-      that.webradios = that.webradios.concat([data]);
+      that.fetchWebradios();
     });
   };
   this.editWebradio = function(data) {
     return this.clokc.edit_webradio(data.uuid, data, function() {
-      var radio = _.find(that.webradios, {'uuid': data.uuid});
-      _.merge(radio, data);
+      that.fetchWebradios();
     });
   };
 };
@@ -278,6 +276,7 @@ Vue.component('radio-item', {
 
 Vue.component('menu', {
   template: '#menu-template',
+  props: ['nbAlarms'],
   methods: {
     menuClick: function() {
       var layout   = document.getElementById('layout'),
@@ -323,6 +322,11 @@ Vue.component('webradio-edit-view', {
     if (!this.isEdit)
       return {'radio': {'name': '', 'url': ''}};
     var radio = _.find(this.state.webradios, {'uuid': this.state.viewData.uuid});
+    if (!radio) {
+      var tmp = window.location.hash;
+      window.location.hash = '#/webradios';
+      window.location.hash = tmp;
+    }
     return {'radio': radio};
   },
   methods: {
@@ -337,7 +341,6 @@ Vue.component('webradio-edit-view', {
       } else {
         this.state.addWebradio(this.radio);
       }
-      this.state.fetchWebradios();
       window.location.hash = '#/webradios';
     },
     cancel: function() {
@@ -347,14 +350,125 @@ Vue.component('webradio-edit-view', {
   }
 });
 
+Vue.component('alarm-item', {
+  template: '#alarmitem-template',
+  props: ['alarm', 'state'],
+  computed: {
+    radio: function() {
+      var radio = _.find(this.state.webradios, {'uuid': this.alarm.webradio});
+      return radio;
+    },
+    daysFormat: function() {
+      var stringDays = ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'];
+      var days = this.alarm.days.map(function(day) {
+        return stringDays[day];
+      });
+      return days.join(', ')
+    },
+    limitsFormat: function() {
+      var begin = this.alarm.start;
+      var end = begin + this.alarm.duration;
+      var beginHour   = "" + Math.floor(begin / 3600),
+          beginMinute = "" + Math.floor(begin % 3600 / 60),
+          endHour     = "" + Math.floor(end / 3600) % 24,
+          endMinute   = "" + Math.floor(end % 3600 / 60);
+      beginMinute = (beginMinute === '0') ? '00' : beginMinute;
+      endMinute = (endMinute === '0') ? '00' : endMinute;
+      var begin = "" + beginHour + ":" + beginMinute,
+          end = "" + endHour + ":" + endMinute;
+      return begin + ' − ' + end;
+    }
+  },
+  methods: {
+    deleteAlarmClick: function() {
+      if (confirm("Do you really want to delete this alarm ?")) {
+        this.state.deleteAlarm(this.alarm.uuid);
+      }
+    }
+  }
+});
+
 Vue.component('alarm-view', {
   template: '#alarmview-template',
   props: ['state'],
 });
 
+Vue.component('alarm-edit-view', {
+  template: '#alarmeditview-template',
+  props: ['state', 'isEdit'],
+  data: function() {
+    if (!this.isEdit)
+      return {'alarm': {
+        'start': 7 * 3600 + 30 * 60,
+        'duration': 30 * 60,
+        'days': [],
+        'webradio': null,
+        'disabled': false,
+        'shuffle': false,
+      }};
+    var alarm = _.find(this.state.alarms, {'uuid': this.state.viewData.uuid});
+    if (!alarm) {
+      var tmp = window.location.hash;
+      window.location.hash = '#/alarms';
+      window.location.hash = tmp;
+    }
+    return {'alarm': alarm};
+  },
+  computed: {
+    starthour: {
+      get: function () {
+        return Math.floor(this.alarm.start / 3600);
+      },
+      set: function (newValue) {
+        this.alarm.start = newValue * 3600 + this.startminute * 60;
+      }
+    },
+    startminute: {
+      get: function() {
+        return Math.floor(this.alarm.start % 3600 / 60);
+      },
+      set: function(newValue) {
+        this.alarm.start = this.starthour * 3600 + newValue * 60;
+      }
+    },
+    duration: {
+      get: function() {
+        return Math.floor(this.alarm.duration / 60);
+      },
+      set: function(newValue) {
+        this.alarm.duration = newValue * 60;
+      }
+    }
+  },
+  methods: {
+    submit: function() {
+      console.log(this.alarm);
+      if (!this.alarm.webradio || !this.alarm.days || this.alarm.days.length == 0) {
+        return;
+      }
+      if (this.isEdit) {
+        this.state.editAlarm(this.alarm);
+      } else {
+        this.state.addAlarm(this.alarm);
+      }
+      window.location.hash = '#/alarms';
+    },
+    cancel: function() {
+      this.state.fetchAlarms();
+      window.location.hash = '#/alarms';
+    }
+  }
+});
+
 var vm = new Vue({
   el: '#everything',
   data: state,
+  computed: {
+    nbAlarmsEnabled: function() {
+      var alarmsEnabled = _.filter(this.alarms, {'disabled': false});
+      return alarmsEnabled.length;
+    }
+  },
   created: function() {
     state.fetchWebradios();
     state.fetchAlarms();
@@ -373,10 +487,12 @@ var vm = new Vue({
 
 // <ROUTES>
 
-function alarmView() { state.view = 'alarmView'; };
 function webradioView() { state.view = 'webradioView'; };
 function webradioEditView(uuid) { state.view = 'webradioEditView'; state.viewData = {'uuid': uuid}; };
 function webradioCreateView() { state.view = 'webradioCreateView'; };
+function alarmView() { state.view = 'alarmView'; };
+function alarmEditView(uuid) { state.view = 'alarmEditView'; state.viewData = {'uuid': uuid}; };
+function alarmCreateView() { state.view = 'alarmCreateView'; };
 
 var routes = {
   '/webradios': webradioView,
@@ -384,8 +500,8 @@ var routes = {
   '/webradios/edit/:uuid': webradioEditView,
 
   '/alarms': alarmView,
-  // '/alarms/new': alarmAddView,
-  // '/alarms/edit/:uuid': alarmEditView,
+  '/alarms/new': alarmCreateView,
+  '/alarms/edit/:uuid': alarmEditView,
 
   '/*': webradioView
 };
@@ -393,6 +509,7 @@ var routes = {
 var router = Router(routes);
 router.init();
 
-if (window.location.hash.indexOf('/alarms') === -1 && window.location.hash.indexOf('/webradios') === -1) {
+if (window.location.hash.indexOf('/alarms') === -1 &&
+    window.location.hash.indexOf('/webradios') === -1) {
   window.location.hash = '#/webradios';
 }

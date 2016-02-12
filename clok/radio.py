@@ -32,6 +32,8 @@ class CustomMpPlayer(MpPlayer):
         opts = super(CustomMpPlayer, self)._buildStartOpts(*args, **kwargs)
         opts.insert(1, '-loop')
         opts.insert(2, '0')
+        opts.insert(3, '-volstep')
+        opts.insert(4, '10')
         if self.should_i_shuffle is True:
             opts.append('-shuffle')
         return opts
@@ -133,6 +135,8 @@ class Radio(object):
         self.is_paused = False
 
     def play(self, url=None, shuffle=False):
+        self.is_muted = False
+        self.is_paused = False
         self.cmd_queue.put({
             'type': 'play',
             'url': url,
@@ -153,21 +157,36 @@ class Radio(object):
         if self.is_paused:
             self.toggle_pause()
 
-    def volume_up(self): self.cmd_queue.put({'type': 'volume_up'})
+    def volume_up(self):
+        self.is_paused = False
+        self.is_muted = False
+        self.cmd_queue.put({'type': 'volume_up'})
 
-    def volume_down(self): self.cmd_queue.put({'type': 'volume_down'})
+    def volume_down(self):
+        self.is_paused = False
+        self.is_muted = False
+        self.cmd_queue.put({'type': 'volume_down'})
 
-    def go_backward(self): self.cmd_queue.put({'type': 'go_backward'})
+    def go_backward(self):
+        self.is_paused = False
+        self.cmd_queue.put({'type': 'go_backward'})
 
-    def go_forward(self): self.cmd_queue.put({'type': 'go_forward'})
+    def go_forward(self):
+        self.is_paused = False
+        self.cmd_queue.put({'type': 'go_forward'})
 
     def mute(self):
+        self.is_paused = False
         self.cmd_queue.put({'type': 'mute'})
         self.is_muted = not self.is_muted
 
-    def previous_track(self): self.cmd_queue.put({'type': 'previous_track'})
+    def previous_track(self):
+        self.is_paused = False
+        self.cmd_queue.put({'type': 'previous_track'})
 
-    def next_track(self): self.cmd_queue.put({'type': 'next_track'})
+    def next_track(self):
+        self.is_paused = False
+        self.cmd_queue.put({'type': 'next_track'})
 
     def get_is_playing(self):
         self.cmd_queue.put({'type': 'is_playing'})

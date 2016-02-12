@@ -5,6 +5,8 @@ from __future__ import unicode_literals, absolute_import
 
 from . import PY3
 
+import json
+
 if PY3:
     from urllib.parse import urljoin
 else:
@@ -101,13 +103,13 @@ class ClokClient(HttpClient):
         return self.get('alarms/%s' % alarm_uuid)
 
     def add_alarm(self, **kwargs):
-        return self.post('alarms/', data=kwargs)
+        return self.post('alarms/', data={'__json_data': json.dumps(kwargs)})
 
     def remove_alarm(self, alarm_uuid):
         return self.delete('alarms/%s' % alarm_uuid)
 
     def edit_alarm(self, alarm_uuid, **kwargs):
-        return self.put('alarms/%s' % alarm_uuid, data=kwargs)
+        return self.put('alarms/%s' % alarm_uuid, data={'__json_data': json.dumps(kwargs)})
 
     # RADIOS
 
@@ -118,10 +120,10 @@ class ClokClient(HttpClient):
         return self.get('webradios/%s' % radio_uuid)
 
     def add_webradio(self, **kwargs):
-        return self.post('webradios/', data=kwargs)
+        return self.post('webradios/', data={'__json_data': json.dumps(kwargs)})
 
     def remove_webradio(self, radio_uuid):
         return self.delete('webradios/%s' % radio_uuid)
 
     def edit_webradio(self, radio_uuid, **kwargs):
-        return self.put('webradios/%s' % radio_uuid, data=kwargs)
+        return self.put('webradios/%s' % radio_uuid, data={'__json_data': json.dumps(kwargs)})

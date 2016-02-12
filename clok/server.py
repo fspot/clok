@@ -64,24 +64,9 @@ def find_data_in(req):
 
 # ~~~ Static Routes ~~~
 
-@app.get('/<filename:re:.*\.js>')
-def javascripts(filename):
-    return static_file(filename, root=join(HERE, 'static', "js"))
-
-
-@app.get('/<filename:re:.*\.css>')
-def stylesheets(filename):
-    return static_file(filename, root=join(HERE, 'static', "css"))
-
-
-@app.get('/<filename:re:.*\.(jpg|png|gif|ico)>')
-def images(filename):
-    return static_file(filename, root=join(HERE, 'static', "img"))
-
-
-@app.get('/<filename:re:.*\.(eot|ttf|woff|svg)>')
-def fonts(filename):
-    return static_file(filename, root=join(HERE, 'static', "fonts"))
+@app.route('/static/<filename:path>')
+def serve_static(filename):
+    return static_file(filename, root=join(HERE, 'static'))
 
 
 # ~~~ VIEWS ~~~
@@ -89,7 +74,6 @@ def fonts(filename):
 @app.route('/')
 def index():
     return static_file('index.html', root=join(HERE, 'static', "html"))
-    # return {'url': app.radio.url, 'playing': app.radio.is_playing}
 
 
 # ~~~ API ~~~
