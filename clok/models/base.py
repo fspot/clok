@@ -86,13 +86,19 @@ class Base(object):
 
     @classmethod
     def all(cls, to_dict=False):
-        ret = [cls.from_dict(o) for o in cls.get_table().all()]
-        return ret if to_dict is False else [o.to_dict() for o in ret]
+        ret = cls.get_table().all()
+        if to_dict is False:
+            return [cls.from_dict(o) for o in ret]
+        else:
+            return [o.copy() for o in ret]
 
     @classmethod
     def filter(cls, query, to_dict=False):
-        ret = [cls.from_dict(o) for o in cls.get_table().search(query)]
-        return ret if to_dict is False else [o.to_dict() for o in ret]
+        ret = cls.get_table().search(query)
+        if to_dict is False:
+            return [cls.from_dict(o) for o in ret]
+        else:
+            return [o.copy() for o in ret]
 
     @classmethod
     def count(cls, query):
