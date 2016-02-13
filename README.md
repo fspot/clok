@@ -86,8 +86,7 @@ Python client
 >>> from clok.client import ClokClient
 >>> cc = ClokClient()
 >>> cc.list_alarms().json()
-{u'alarms': [{u'shuffle': False, u'uuid': u'52f5f8e0-7d09-4d40-b0bd-0acab3220383', u'days': [0, 1, 2, 3, 4], u'disabled': False, u'start': 27000, u'we
-bradio': u'7baec513-0fe8-48f0-9411-69f8b40bc580', u'duration': 1800}], u'status': u'success'}
+{u'alarms': [{u'shuffle': False, u'uuid': u'52f5f8e0-7d09-4d40-b0bd-0acab3220383', u'days': [0, 1, 2, 3, 4], u'disabled': False, u'start': 27000, u'webradio': u'7baec513-0fe8-48f0-9411-69f8b40bc580', u'duration': 1800}], u'status': u'success'}
 >>> cc.pause().json()
 {u'status': u'success'}
 ```
