@@ -20,6 +20,7 @@ Listen to radio and set up alarms from your computer, and control it from a web 
 - extra player controls for playlists : previous track / next track / shuffle
 - alarms settings allow to chose trigger time, duration, days of week
 - can be controlled via web ui or via REST API (python client inside)
+- web ui translated in french and english (according to system language)
 
 Installation
 ------------
