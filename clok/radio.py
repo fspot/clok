@@ -197,7 +197,8 @@ class Radio(object):
 
     def get_url(self):
         self.cmd_queue.put({'type': 'get_url'})
-        return self.answer_queue.get()
+        ret = self.answer_queue.get()
+        return ret if ret is None or PY3 else ret.decode('utf8')
 
     @property
     def url(self): return self.get_url()
