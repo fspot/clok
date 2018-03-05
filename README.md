@@ -4,7 +4,7 @@ Clok
 [![https://badge.fury.io/py/clok](https://badge.fury.io/py/clok.png)](https://badge.fury.io/py/clok)
 [![Build Status](https://travis-ci.org/fspot/clok.svg)](https://travis-ci.org/fspot/clok)
 [![Coverage Status](https://coveralls.io/repos/fspot/clok/badge.png)](https://coveralls.io/r/fspot/clok)
-[![License](https://pypip.in/license/clok/badge.svg)](https://pypi.python.org/pypi/clok/)
+[![License](https://img.shields.io/pypi/l/clok.svg)](https://pypi.python.org/pypi/clok/)
 
 Listen to radio and set up alarms from your computer, and control it from a web UI. Relies on `mplayer`.
 
